@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda Topologia em Barramento</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #38bdf8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--bg-card);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 16px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            background: #090d16;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            width: 100%;
+            height: 320px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        select, button {
+            background: #0f172a;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button {
+            font-weight: 600;
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        button:hover:not(:disabled) {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.btn-danger {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        button.btn-warning {
+            background: var(--warning);
+            border-color: var(--warning);
+            color: #000;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-card h3 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card.pros h3 { color: var(--success); }
+        .info-card.cons h3 { color: var(--danger); }
+        .info-card.quiz-card h3 { color: var(--primary); }
+
+        .info-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-card li {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: var(--text-muted);
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .info-card li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .info-card.pros li::before { color: var(--success); }
+        .info-card.cons li::before { color: var(--danger); }
+
+        .quiz-option {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: #1e293b;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .quiz-feedback.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--success);
+            color: #4ade80;
+            display: block;
+        }
+
+        .quiz-feedback.wrong {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: #f87171;
+            display: block;
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            min-height: 24px;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎮 Simulação: Topologia em Barramento (Bus)</h1>
+        <p>Aprenda visualmente como funciona, suas vantagens, desvantagens e teste seus conhecimentos!</p>
+    </header>
+
+    <div class="container">
+        <!-- ÁREA DO SIMULADOR INTERATIVO -->
+        <div class="canvas-card">
+            <div class="canvas-header">
+                <h2>Simulador Prático</h2>
+                <div class="status-msg" id="status-text">Selecione os computadores e clique em "Transmitir Dados"</div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="netCanvas"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Origem:</label>
+                    <select id="select-src">
+                        <option value="0">PC A</option>
+                        <option value="1">PC B</option>
+                        <option value="2" selected>PC C</option>
+                        <option value="3">PC D</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Destino:</label>
+                    <select id="select-dst">
+                        <option value="0">PC A</option>
+                        <option value="1" selected>PC B</option>
+                        <option value="2">PC C</option>
+                        <option value="3">PC D</option>
+                    </select>
+                </div>
+
+                <button onclick="sendData()">✉️ Transmitir Dados</button>
+                <button class="btn-danger" id="btn-cut" onclick="toggleCableBreak()">✂️ Romper Cabo Principal</button>
+                <button class="btn-warning" onclick="resetSim()">🔄 Restaurar Rede</button>
+            </div>
+        </div>
+
+        <!-- PAINEL TEÓRICO DE VANTAGENS E DESVANTAGENS -->
+        <div class="info-grid">
+            <div class="info-card pros">
+                <h3>✅ Vantagens</h3>
+                <ul>
+                    <li><b>Baixo Custo:</b> Requer muito menos cabos que outras topologias (como a topologia em Estrela).</li>
+                    <li><b>Fácil Instalação:</b> Simples de montar e conectar novos computadores em linha reta.</li>
+                    <li><b>Ideal para Redes Pequenas:</b> Funciona bem com poucos equipamentos sem exigir roteadores ou switches centrais.</li>
+                </ul>
+            </div>
+
+            <div class="info-card cons">
+                <h3>❌ Desvantagens</h3>
+                <ul>
+                    <li><b>Ponto Único de Falha:</b> Se o cabo central se romper, TODA a rede para de funcionar imediatamente.</li>
+                    <li><b>Colisões de Dados:</b> Como o meio é compartilhado, múltiplos envios simultâneos causam colisões de sinal.</li>
+                    <li><b>Difícil Diagnóstico:</b> Identificar em qual ponto exato o cabo quebrou exige testar segmento por segmento.</li>
+                </ul>
+            </div>
+
+            <!-- QUIZ INTERATIVO -->
+            <div class="info-card quiz-card">
+                <h3>🧠 Quiz de Fixação (<span id="quiz-score">Pontos: 0/3</span>)</h3>
+                <div id="quiz-container">
+                    <p id="quiz-question" style="font-weight: 600; font-size: 0.95rem; margin-top: 4px;"></p>
+                    <div id="quiz-options"></div>
+                    <div id="quiz-feedback" class="quiz-feedback"></div>
+                    <button id="btn-next-quiz" style="display: none; margin-top: 10px; width: 100%;" onclick="nextQuestion()">Próxima Pergunta ➡️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ESTADO DO SIMULADOR ---
+        const canvas = document.getElementById('netCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let isCableBroken = false;
+        let signals = [];
+        let animationFrameId = null;
+
+        const pcs = [
+            { id: 0, label: "PC A", ip: "192.168.0.1", x: 0.15, status: "idle", msg: "" },
+            { id: 1, label: "PC B", ip: "192.168.0.2", x: 0.38, status: "idle", msg: "" },
+            { id: 2, label: "PC C", ip: "192.168.0.3", x: 0.62, status: "idle", msg: "" },
+            { id: 3, label: "PC D", ip: "192.168.0.4", x: 0.85, status: "idle", msg: "" }
+        ];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- RENDERIZAÇÃO GRÁFICA ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const busY = canvas.height * 0.65;
+            const startX = 50;
+            const endX = canvas.width - 50;
+            const breakX = canvas.width * 0.5;
+
+            // 1. Desenha Cabo Barramento Central
+            if (!isCableBroken) {
+                // Cabo Íntegro
+                ctx.beginPath();
+                ctx.moveTo(startX, busY);
+                ctx.lineTo(endX, busY);
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 10;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(startX, busY);
+                ctx.lineTo(endX, busY);
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else {
+                // Cabo Rompido no Meio
+                // Lado Esquerdo
+                ctx.beginPath();
+                ctx.moveTo(startX, busY);
+                ctx.lineTo(breakX - 25, busY);
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 10;
+                ctx.stroke();
+
+                // Lado Direito
+                ctx.beginPath();
+                ctx.moveTo(breakX + 25, busY);
+                ctx.lineTo(endX, busY);
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 10;
+                ctx.stroke();
+
+                // Ícone de Corte/Faísca
+                ctx.fillStyle = '#ef4444';
+                ctx.font = '22px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡ CABO ROMPIDO ⚡', breakX, busY + 35);
+            }
+
+            // 2. Terminadores nas Pontas (50 Ohms)
+            drawTerminator(startX, busY, 'left');
+            drawTerminator(endX, busY, 'right');
+
+            // 3. Desenha Computadores e Conexões (Drop Cables)
+            const pcY = canvas.height * 0.25;
+            pcs.forEach(pc => {
+                const px = canvas.width * pc.x;
+
+                // Cabo de Derivação
+                ctx.beginPath();
+                ctx.moveTo(px, busY);
+                ctx.lineTo(px, pcY + 35);
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Conector em T (BNC)
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillRect(px - 6, busY - 6, 12, 12);
+
+                // Gabinete/Monitor do PC
+                ctx.fillStyle = pc.status === 'sending' ? '#2563eb' : 
+                              (pc.status === 'accepted' ? '#16a34a' : 
+                              (pc.status === 'discarded' ? '#dc2626' : '#1e293b'));
+                ctx.strokeStyle = pc.status === 'idle' ? '#475569' : '#ffffff';
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(px - 40, pcY - 25, 80, 60, 8);
+                else ctx.rect(px - 40, pcY - 25, 80, 60);
+                ctx.fill();
+                ctx.stroke();
+
+                // Tela
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(px - 34, pcY - 18, 68, 36);
+
+                // Texto do PC
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(pc.label, px, pcY - 2);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px monospace';
+                ctx.fillText(pc.ip, px, pcY + 12);
+
+                // Mensagem de Status sobre o PC
+                if (pc.msg) {
+                    ctx.fillStyle = pc.status === 'accepted' ? '#4ade80' : 
+                                  (pc.status === 'discarded' ? '#f87171' : '#fde047');
+                    ctx.font = 'bold 11px sans-serif';
+                    ctx.fillText(pc.msg, px, pcY - 32);
+                }
+            });
+
+            // 4. Desenha Pacotes de Sinais
+            signals.forEach(s => {
+                ctx.beginPath();
+                ctx.arc(s.x, busY, 7, 0, Math.PI * 2);
+                ctx.fillStyle = s.color || '#38bdf8';
+                ctx.shadowColor = s.color || '#38bdf8';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            updateSignals();
+            animationFrameId = requestAnimationFrame(draw);
+        }
+
+        // --- LÓGICA DE MOVIMENTO DOS SINAIS ---
+        function updateSignals() {
+            const busY = canvas.height * 0.65;
+            const startX = 50;
+            const endX = canvas.width - 50;
+            const breakX = canvas.width * 0.5;
+
+            for (let i = signals.length - 1; i >= 0; i--) {
+                let s = signals[i];
+                s.x += s.dir * s.speed;
+
+                // Teste de interrupção se o cabo estiver quebrado
+                if (isCableBroken && Math.abs(s.x - breakX) < 20) {
+                    signals.splice(i, 1);
+                    setStatus("❌ Transmissão falhou! O cabo está rompido.", "var(--danger)");
+                    continue;
+                }
+
+                // Verifica se alcançou os computadores
+                pcs.forEach(pc => {
+                    const px = canvas.width * pc.x;
+                    if (Math.abs(s.x - px) < 4 && !s.reached.includes(pc.id)) {
+                        s.reached.push(pc.id);
+
+                        if (pc.id === s.srcId) {
+                            // Origem
+                        } else if (pc.id === s.dstId) {
+                            pc.status = 'accepted';
+                            pc.msg = '✅ ACEITO!';
+                        } else {
+                            pc.status = 'discarded';
+                            pc.msg = '🚫 DESCARTADO';
+                        }
+                    }
+                });
+
+                // Absorção nos Terminadores
+                if (s.x <= startX || s.x >= endX) {
+                    signals.splice(i, 1);
+                }
+            }
+        }
+
+        function drawTerminator(x, y, side) {
+            ctx.fillStyle = '#f59e0b';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            const w = 12, h = 24;
+            const tx = side === 'left' ? x - w : x;
+            ctx.fillRect(tx, y - h/2, w, h);
+            ctx.strokeRect(tx, y - h/2, w, h);
+        }
+
+        // --- AÇÕES DO USUÁRIO ---
+        function sendData() {
+            const srcId = parseInt(document.getElementById('select-src').value);
+            const dstId = parseInt(document.getElementById('select-dst').value);
+
+            if (srcId === dstId) {
+                alert("Escolha computadores diferentes para Origem e Destino!");
+                return;
+            }
+
+            // Reseta status
+            pcs.forEach(p => { p.status = 'idle'; p.msg = ''; });
+            signals = [];
+
+            const srcPc = pcs[srcId];
+            const startX = canvas.width * srcPc.x;
+
+            srcPc.status = 'sending';
+            srcPc.msg = 'ENVIANDO...';
+
+            if (isCableBroken) {
+                setStatus("⚠️ Tentando transmitir em um barramento rompido...", "var(--warning)");
+            } else {
+                setStatus(`📡 Transmitindo de ${srcPc.label} para ${pcs[dstId].label} (Broadcast no Barramento)`, "var(--primary)");
+            }
+
+            // Em barramento, o sinal elétrico se propaga para AMBOS OS LADOS
+            signals.push({ x: startX, dir: -1, speed: 3, srcId: srcId, dstId: dstId, reached: [srcId] });
+            signals.push({ x: startX, dir: 1, speed: 3, srcId: srcId, dstId: dstId, reached: [srcId] });
+        }
+
+        function toggleCableBreak() {
+            isCableBroken = !isCableBroken;
+            const btn = document.getElementById('btn-cut');
+            signals = [];
+            pcs.forEach(p => { p.status = 'idle'; p.msg = ''; });
+
+            if (isCableBroken) {
+                btn.innerText = "🩹 Consertar Cabo";
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-warning');
+                setStatus("💥 O cabo principal foi cortado! Toda a comunicação foi interrompida.", "var(--danger)");
+            } else {
+                btn.innerText = "✂️ Romper Cabo Principal";
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-danger');
+                setStatus("✅ Cabo consertado. A rede voltou ao normal.", "var(--success)");
+            }
+        }
+
+        function resetSim() {
+            isCableBroken = false;
+            signals = [];
+            pcs.forEach(p => { p.status = 'idle'; p.msg = ''; });
+
+            const btn = document.getElementById('btn-cut');
+            btn.innerText = "✂️ Romper Cabo Principal";
+            btn.classList.remove('btn-warning');
+            btn.classList.add('btn-danger');
+
+            setStatus("Simulador reiniciado. Escolha os PCs e transmita dados.", "var(--primary)");
+        }
+
+        function setStatus(text, color) {
+            const el = document.getElementById('status-text');
+            el.innerText = text;
+            el.style.color = color || "var(--primary)";
+        }
+
+        // --- LÓGICA DO QUIZ ---
+        const quizQuestions = [
+            {
+                q: "1. Como os dados navegam no cabo barramento em uma transmissão?",
+                options: [
+                    "Vão diretamente e apenas para o computador de destino.",
+                    "Propagam-se por todo o cabo para TODOS os computadores (Broadcast).",
+                    "São enviados para um Switch central que redireciona o sinal."
+                ],
+                correct: 1,
+                explanation: "Exato! No barramento o meio é compartilhado. O sinal vai para todos, mas apenas o destino aceita o pacote."
+            },
+            {
+                q: "2. O que acontece se o cabo principal do barramento for partido ao meio?",
+                options: [
+                    "Apenas os computadores do lado esquerdo param de funcionar.",
+                    "A rede continua funcionando normalmente pois usa Wi-Fi de backup.",
+                    "A rede inteira para de funcionar (Ponto Único de Falha)."
+                ],
+                correct: 2,
+                explanation: "Correto! Esta é a principal desvantagem: se o cabo barramento quebra, toda a comunicação é paralisada."
+            },
+            {
+                q: "3. Qual é a principal vantagem da topologia em barramento?",
+                options: [
+                    "Economia de cabos e facilidade de instalação em redes pequenas.",
+                    "Velocidade extremamente alta sem nenhuma colisão de dados.",
+                    "Segurança total, pois nenhum PC consegue ver o tráfego do outro."
+                ],
+                correct: 0,
+                explanation: "Perfeito! A topologia usa muito menos cabos que a topologia em Estrela, barateando a instalação."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let score = 0;
+
+        function renderQuiz() {
+            const q = quizQuestions[currentQuizIndex];
+            document.getElementById('quiz-question').innerText = q.q;
+
+            const optsDiv = document.getElementById('quiz-options');
+            optsDiv.innerHTML = '';
+
+            document.getElementById('quiz-feedback').className = 'quiz-feedback';
+            document.getElementById('quiz-feedback').style.display = 'none';
+            document.getElementById('btn-next-quiz').style.display = 'none';
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'quiz-option';
+                btn.innerText = optText;
+                btn.onclick = () => answerQuiz(idx);
+                optsDiv.appendChild(btn);
+            });
+        }
+
+        function answerQuiz(selectedIdx) {
+            const q = quizQuestions[currentQuizIndex];
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const opts = document.querySelectorAll('.quiz-option');
+
+            opts.forEach(o => o.style.pointerEvents = 'none'); // Desabilita novos cliques
+
+            if (selectedIdx === q.correct) {
+                score++;
+                feedbackEl.innerText = "✅ " + q.explanation;
+                feedbackEl.className = 'quiz-feedback correct';
+            } else {
+                feedbackEl.innerText = "❌ Incorreto. " + q.explanation;
+                feedbackEl.className = 'quiz-feedback wrong';
+            }
+
+            document.getElementById('quiz-score').innerText = `Pontos: ${score}/3`;
+            document.getElementById('btn-next-quiz').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizQuestions.length) {
+                renderQuiz();
+            } else {
+                document.getElementById('quiz-container').innerHTML = `
+                    <div style="text-align: center; padding: 20px 0;">
+                        <h4>🎉 Quiz Concluído!</h4>
+                        <p style="margin: 10px 0; color: var(--text-muted);">Sua pontuação final foi <b>${score} de 3</b>.</p>
+                        <button onclick="resetQuiz()">Tentar Novamente 🔄</button>
+                    </div>
+                `;
+            }
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            score = 0;
+            document.getElementById('quiz-score').innerText = `Pontos: 0/3`;
+            document.getElementById('quiz-container').innerHTML = `
+                <p id="quiz-question" style="font-weight: 600; font-size: 0.95rem; margin-top: 4px;"></p>
+                <div id="quiz-options"></div>
+                <div id="quiz-feedback" class="quiz-feedback"></div>
+                <button id="btn-next-quiz" style="display: none; margin-top: 10px; width: 100%;" onclick="nextQuestion()">Próxima Pergunta ➡️</button>
+            `;
+            renderQuiz();
+        }
+
+        // --- INICIALIZAÇÃO ---
+        draw();
+        renderQuiz();
+    </script>
+</body>
+</html>
