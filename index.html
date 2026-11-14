@@ -1,713 +1,1517 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aprenda Topologia em Barramento</title>
-    <style>
-        :root {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --primary: #38bdf8;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102b37">
+  <title>Rede em Missão: o cabo misterioso</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --night: #102b37;
+      --night-2: #183c49;
+      --ink: #142c35;
+      --paper: #fff5d8;
+      --paper-2: #f3e7c4;
+      --mint: #a7e8c1;
+      --grass: #88c98d;
+      --yellow: #ffda69;
+      --coral: #ff8e7b;
+      --blue: #a7dce5;
+      --muted: #44616a;
+      --line: #183944;
+      --focus: #ff9a4c;
+      --shadow: #071920;
+      --body-size: 18px;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
+    * { box-sizing: border-box; }
+    html { font-size: var(--body-size); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 86% 3%, #245160 0, transparent 34rem),
+        repeating-linear-gradient(135deg, #102b37 0 18px, #112e3a 18px 36px);
+      font: 1rem/1.5 "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+    button, select { font: inherit; }
+    button {
+      min-height: 46px;
+      border: 3px solid var(--line);
+      border-radius: 3px;
+      padding: .55rem .85rem;
+      color: var(--ink);
+      background: var(--paper);
+      box-shadow: 3px 3px 0 var(--shadow);
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    }
+    button:hover:not(:disabled) { transform: translate(-1px,-1px); filter: brightness(1.05); box-shadow: 4px 4px 0 var(--shadow); }
+    button:active:not(:disabled) { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow); }
+    button:disabled { opacity: .58; cursor: not-allowed; box-shadow: none; }
+    button:focus-visible, select:focus-visible, a:focus-visible, [tabindex="0"]:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 3px;
+    }
+    .primary { background: var(--mint); }
+    .accent { background: var(--yellow); }
+    .danger { background: #ffd1c7; }
+    .blue-btn { background: var(--blue); }
+    .quiet { background: #e4dcc7; }
+    .hidden { display: none !important; }
+    .skip-link {
+      position: absolute; z-index: 20; top: -90px; left: 12px;
+      padding: 10px 14px; color: var(--ink); background: white;
+    }
+    .skip-link:focus { top: 10px; }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    .topbar {
+      max-width: 1500px; margin: auto; padding: 16px 22px 13px;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 14px; flex-wrap: wrap; color: white;
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid; place-items: center; width: 52px; height: 52px;
+      border: 3px solid var(--yellow); background: var(--night-2);
+      box-shadow: 4px 4px 0 var(--shadow); color: var(--yellow);
+      font-size: 1.65rem; line-height: 1;
+    }
+    .brand h1 {
+      margin: 0; color: var(--yellow); font-size: clamp(1.14rem, 2.4vw, 1.75rem);
+      line-height: 1.1; letter-spacing: .025em; font-weight: 1000;
+    }
+    .brand p { margin: 5px 0 0; color: #d3e7e3; font-size: .88rem; }
+    .top-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .scoreboard { display: flex; gap: 7px; }
+    .score-chip {
+      padding: 7px 10px; border: 2px solid #6b9299; background: #183c49;
+      color: white; font-size: .86rem; white-space: nowrap;
+    }
+    .score-chip b { color: var(--yellow); }
+    .top-actions button { min-height: 42px; }
 
-        header {
-            background-color: var(--bg-card);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 2px solid var(--border);
-        }
+    .shell { max-width: 1500px; margin: auto; padding: 0 22px 30px; }
+    .columns { display: grid; grid-template-columns: 252px minmax(0,1fr); gap: 17px; align-items: start; }
+    .mission-rail, .workbench {
+      border: 4px solid #071920; border-radius: 4px;
+      box-shadow: 6px 6px 0 #071920;
+    }
+    .mission-rail { position: sticky; top: 12px; padding: 15px; background: var(--paper-2); }
+    .rail-heading {
+      margin: 0 0 11px; color: #285247; font-size: .8rem;
+      letter-spacing: .11em; text-transform: uppercase;
+    }
+    .mission-list { display: grid; min-width: 0; gap: 8px; }
+    .mission-row {
+      display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 9px;
+      min-height: 57px; padding: 7px 8px; border: 2px solid #8e9075;
+      background: #fff9e9; box-shadow: 2px 2px 0 #c6b995;
+    }
+    .mission-row.current { border: 3px solid #32734e; background: #d8f1d6; box-shadow: 3px 3px 0 #32734e; }
+    .mission-row.complete { background: #dcecf0; }
+    .mission-number {
+      display: grid; place-items: center; width: 31px; height: 31px;
+      border: 2px solid var(--line); background: #d7ddcd; font-weight: 900;
+    }
+    .mission-row.current .mission-number { background: var(--yellow); }
+    .mission-row strong { display: block; font-size: .85rem; line-height: 1.18; }
+    .mission-row small { display: block; margin-top: 3px; color: #425c5e; font-size: .72rem; }
+    .rail-note { margin: 13px 0 0; padding: 10px; border: 2px dashed #9a8144; background: #fff3cc; font-size: .8rem; }
+    .rail-note b { display: block; margin-bottom: 3px; }
 
-        header h1 {
-            color: var(--primary);
-            font-size: 1.8rem;
-            margin-bottom: 6px;
-        }
+    .workbench { min-width: 0; padding: 15px; background: var(--paper); }
+    .mission-heading {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+      padding: 14px 16px; margin-bottom: 12px; border: 4px solid #367650;
+      background: #dff2d7; box-shadow: 4px 4px 0 #244f37;
+    }
+    .eyebrow { color: #2a6947; font-size: .78rem; font-weight: 900; letter-spacing: .1em; }
+    .mission-heading h2 { margin: 4px 0; color: #193d2d; font-size: clamp(1.4rem,3vw,2rem); line-height: 1.06; }
+    .mission-heading p { max-width: 780px; margin: 4px 0 0; font-size: .94rem; }
+    .phase-tag {
+      padding: 7px 10px; border: 3px solid var(--line); background: var(--yellow);
+      font-size: .8rem; font-weight: 900; white-space: nowrap;
+    }
+    .task-box {
+      display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center;
+      margin-bottom: 12px; padding: 10px 12px; border: 3px solid #c8b98b; background: #fffbee;
+    }
+    .task-box strong { color: #654d1a; font-size: .91rem; }
+    .task-box p { margin: 2px 0; font-size: .87rem; }
+    .progress-track { height: 12px; margin-top: 6px; border: 2px solid #48636a; background: #ded8c4; }
+    .progress-track span { display: block; width: 0; height: 100%; background: #398454; transition: width .22s ease; }
+    .task-status { max-width: 240px; color: #3e595f; text-align: right; font-size: .82rem; font-weight: 800; }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
+    .scene-wrap { position: relative; padding-top: 31px; border: 4px solid #23454d; background: #a8d7c6; }
+    .scene-caption {
+      position: absolute; z-index: 5; top: 8px; left: 9px;
+      padding: 4px 8px; border: 2px solid var(--line); background: #fff9e9;
+      color: #213d43; font-size: .74rem; font-weight: 900;
+    }
+    .scene-scroll { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+    .scene {
+      position: relative; width: 100%; min-width: 760px; height: 370px; overflow: hidden;
+      background-color: #9dcfa2;
+      background-image:
+        linear-gradient(90deg,rgba(255,255,255,.16) 2px,transparent 2px),
+        linear-gradient(rgba(255,255,255,.16) 2px,transparent 2px),
+        linear-gradient(#a8d8d0 0 51%,#9dcf9d 51%);
+      background-size: 26px 26px,26px 26px,100% 100%;
+    }
+    .scene::after {
+      content: ""; position: absolute; left: 0; right: 0; top: 87%; height: 13%;
+      border-top: 3px solid rgba(58,103,71,.34);
+      background: repeating-linear-gradient(90deg,transparent 0 35px,rgba(75,125,78,.15) 35px 38px);
+      pointer-events: none;
+    }
+    .scene-scroll-hint { margin: 0; padding: 5px 9px; border-top: 2px solid #23454d; background: #e5f1d6; font-size: .74rem; }
+    .break-model-note {
+      margin: 0; padding: 8px 10px; border-top: 2px solid #7d4938;
+      background: #fff0c4; color: #563a2c; font-size: .78rem;
+    }
+    .scene-kicker {
+      position: absolute; z-index: 4; left: 50%; top: 9%; transform: translateX(-50%);
+      padding: 4px 9px; border: 2px dashed #537b58; background: #eff8d7;
+      color: #345b44; font-size: .76rem; font-weight: 800; white-space: nowrap;
+    }
+    .bus-trunk {
+      position: absolute; z-index: 1; left: 9%; right: 8%; top: 64%;
+      height: 9px; border: 2px solid #263d4a; background: #495669;
+      box-shadow: 0 3px 0 rgba(12,31,34,.25);
+    }
+    .bus-trunk::after {
+      content: ""; position: absolute; left: 0; right: 0; top: 2px; height: 2px;
+      background: #e9d594;
+    }
+    .router-lead {
+      position: absolute; z-index: 1; left: 12%; width: 5px; top: 64%;
+      height: 13%; transform: translateX(-50%);
+      border-left: 2px solid #263d4a; background: linear-gradient(90deg,#495669 0 3px,#e9d594 3px 5px);
+    }
+    .terminator {
+      position: absolute; z-index: 2; top: calc(64% - 5px); width: 10px; height: 21px;
+      border: 3px solid #253943; background: var(--yellow);
+    }
+    .terminator.left { left: calc(9% - 4px); }
+    .terminator.right { right: calc(8% - 4px); }
+    .tap {
+      position: absolute; z-index: 1; top: 39%; width: 5px; height: 25%;
+      transform: translateX(-50%); border-left: 2px solid #243b45;
+      background: linear-gradient(90deg,#47566a 0 3px,#ead797 3px 5px);
+    }
+    .node {
+      position: absolute; z-index: 3; top: 21%; width: 118px; min-height: 131px;
+      transform: translateX(-50%); text-align: center;
+      transition: filter .2s ease;
+    }
+    .node.destination {
+      z-index: 5;
+      outline: 4px solid #e85c22;
+      outline-offset: 3px;
+      filter: drop-shadow(0 0 8px #fff15e);
+    }
+    .node.destination::before {
+      content: "DESTINO DO PACOTE";
+      position: absolute; left: 50%; top: -25px; transform: translateX(-50%);
+      padding: 2px 6px; border: 2px solid #702b16; background: #ffda69;
+      color: #48210f; font-size: .59rem; font-weight: 1000; white-space: nowrap;
+    }
+    .node.destination.accepted {
+      outline-color: #247846;
+      filter: drop-shadow(0 0 10px #9effb5);
+    }
+    .node.destination.accepted::before { background: #a7e8c1; border-color: #247846; }
+    .node.pc-1 { left: 23%; }
+    .node.pc-2 { left: 39%; }
+    .node.pc-3 { left: 55%; }
+    .node.pc-4 { left: 71%; }
+    .node.pc-5 { left: 86%; }
+    .node.router { left: 12%; top: 76%; width: 96px; }
+    .device {
+      position: relative; width: 68px; height: 53px; margin: 0 auto 5px;
+      border: 4px solid #203944; background: #617f91;
+      box-shadow: 4px 4px 0 #547454;
+    }
+    .monitor {
+      position: absolute; top: 5px; left: 7px; width: 46px; height: 30px;
+      border: 3px solid #203944; background: #a7e2dd;
+    }
+    .monitor::after { content: ""; position: absolute; left: 14px; bottom: -9px; width: 8px; height: 6px; background: #203944; }
+    .monitor::before { content: ""; position: absolute; left: 5px; right: 5px; bottom: -12px; height: 3px; background: #203944; }
+    .router-device {
+      width: 65px; height: 43px; margin-top: 2px; border-color: #2a3e45;
+      background: #e7b759; box-shadow: 4px 4px 0 #58724f;
+    }
+    .router-device::before {
+      content: ""; position: absolute; top: -13px; left: 14px; width: 30px; height: 11px;
+      border-left: 3px solid #293d45; border-right: 3px solid #293d45;
+    }
+    .router-device::after {
+      content: "●  ●  ●"; position: absolute; left: 7px; top: 8px;
+      color: #31424a; font-size: 11px; letter-spacing: 1px;
+    }
+    .node-label {
+      display: inline-block; padding: 2px 7px; border: 2px solid #243b45;
+      background: #fff9e9; color: #1d3841; font-size: .78rem; font-weight: 1000;
+      white-space: nowrap;
+    }
+    .node-status {
+      display: block; width: max-content; max-width: 118px; min-height: 22px;
+      margin: 3px auto 0; padding: 1px 4px; background: #fff9e9eF;
+      color: #294850; font-size: .64rem; font-weight: 900; line-height: 1.3;
+    }
+    .node.failed .device { filter: grayscale(1); background: #858b88; box-shadow: 4px 4px 0 #656e68; }
+    .node.failed .node-label, .node.failed .node-status { background: #ffd0c7; }
+    .node.isolated .device { opacity: .45; filter: grayscale(.85); }
+    .node.isolated .node-label, .node.isolated .node-status { background: #e2e0d9; }
+    .node.unreliable .node-label, .node.unreliable .node-status { background: #ffedb5; }
+    .node.observing .device { animation: receiveGlow .48s ease-in-out 2; }
+    .node.accepted .node-label { background: var(--mint); }
+    .node.failed .node-label::before { content: "× "; color: #a1281d; }
+    .node.isolated .node-label::before { content: "↯ "; color: #6a5943; }
+    .bus-break {
+      display: none; position: absolute; z-index: 4; top: calc(64% - 11px);
+      width: 27px; height: 28px; transform: translateX(-50%);
+      border: 3px solid #7d261c; background: #ffd0c7;
+    }
+    .bus-break::before { content: "⚡"; display: block; color: #9d3021; font-size: 17px; line-height: 21px; text-align: center; }
+    .bus-break.visible { display: block; }
+    .break-gap {
+      display: none; position: absolute; z-index: 2; top: calc(64% - 2px);
+      width: 30px; height: 11px; transform: translateX(-50%); background: #f4edcf;
+    }
+    .break-gap.visible { display: block; }
+    .broken-left, .broken-right {
+      position: absolute; z-index: 1; top: 64%; height: 9px; display: none;
+      border: 2px solid #263d4a; background: #495669;
+    }
+    .broken-left.visible, .broken-right.visible { display: block; }
+    .broken-left::after, .broken-right::after { content: ""; position: absolute; left: 0; right: 0; top: 2px; height: 2px; background: #e9d594; }
+    .broken-left { left: 9%; }
+    .broken-right { right: 8%; }
+    .packet {
+      position: absolute; z-index: 6; width: 17px; height: 17px;
+      border: 3px solid #213b43; background: var(--yellow);
+      box-shadow: 2px 2px 0 #132c32; pointer-events: none;
+    }
+    .packet::after { content: ""; position: absolute; inset: 3px; background: #f08a39; }
+    .packet-tag {
+      position: absolute; z-index: 7; padding: 3px 6px;
+      border: 2px solid #513414; background: #fff3ad; color: #3b2911;
+      box-shadow: 2px 2px 0 #132c32; font-size: .64rem; font-weight: 1000;
+      white-space: nowrap; pointer-events: none; transform: translate(-40%,-125%);
+    }
+    .packet-status {
+      margin: 0; padding: 8px 10px; border-bottom: 2px solid #23454d;
+      background: #fff0bd; color: #3c351c; font-size: .82rem; font-weight: 900;
+    }
+    .scene-legend {
+      display: flex; flex-wrap: wrap; gap: 8px 17px; margin-top: 9px;
+      color: #304d53; font-size: .78rem;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 12px; height: 12px; border: 2px solid #263d4a; background: var(--yellow); }
+    .legend-dot.shared { background: #77869a; }
+    .legend-dot.failed { background: var(--coral); }
 
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 16px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    .lower-grid { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(290px,.9fr); gap: 13px; margin-top: 13px; }
+    .panel { min-width: 0; padding: 12px; border: 3px solid #29444a; background: #fffbee; }
+    .panel h3 { margin: 0 0 8px; color: #285249; font-size: 1.03rem; line-height: 1.2; }
+    .panel p { margin: 4px 0 9px; font-size: .85rem; }
+    .control-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .control-group button { font-size: .83rem; }
+    .send-all { width: 100%; margin-bottom: 9px; padding: 11px; border-width: 4px; background: var(--yellow); font-size: .96rem; }
+    .send-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+    .send-grid button { min-height: 42px; padding: 6px 9px; font-size: .78rem; }
+    .control-label { display: block; margin: 10px 0 5px; color: #37565b; font-size: .78rem; font-weight: 900; }
+    .select-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+    select {
+      min-height: 44px; max-width: 100%; padding: 7px 30px 7px 9px;
+      border: 2px solid #38575e; background: #fff; color: #18363e;
+    }
+    .field-explainer { color: #486164; font-size: .75rem !important; }
+    .log {
+      max-height: 245px; min-height: 140px; overflow: auto; padding: 7px 10px;
+      border: 2px solid #87978c; background: #173a40; color: #f6f2de;
+      font-family: "Consolas", "Courier New", monospace; font-size: .76rem;
+    }
+    .log p { margin: 4px 0; padding: 3px 5px; border-left: 3px solid #97cbb0; }
+    .log p.good { border-color: #85db9b; color: #cbf7d1; }
+    .log p.bad { border-color: #ff9c86; color: #ffd0c7; }
+    .log p.info { border-color: #f8d875; color: #f9eab1; }
+    .log p[hidden] { display: none; }
+    .reflection {
+      margin-top: 12px; padding: 11px 13px; border-left: 6px solid #dfb641;
+      background: #fff1bd; color: #3f421f; font-size: .85rem;
+    }
+    .reflection strong { color: #5e4d14; }
+    .mission-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+    .mission-footer p { margin: 0; color: #526568; font-size: .78rem; }
+    .mission-footer button { min-width: 190px; }
 
-        .canvas-card {
-            background-color: var(--bg-card);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+    .intro {
+      max-width: 840px; margin: 28px auto; padding: clamp(20px,4vw,40px);
+      border: 5px solid #081c23; background: var(--paper);
+      box-shadow: 9px 9px 0 #071920;
+    }
+    .intro-mark { display: inline-block; padding: 4px 9px; border: 2px solid #273f46; background: var(--yellow); font-size: .78rem; font-weight: 1000; letter-spacing: .1em; }
+    .intro h2 { margin: 12px 0 6px; color: #1c4d42; font-size: clamp(2rem,7vw,3.8rem); line-height: .98; letter-spacing: -.04em; }
+    .intro .lead { max-width: 660px; font-size: 1.1rem; }
+    .briefing {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin: 22px 0; padding-top: 15px; border-top: 3px dashed #9c9b78;
+    }
+    .briefing div { padding: 11px; border: 2px solid #b1aa8d; background: #fffbee; }
+    .briefing b { display: block; color: #315e4e; }
+    .intro button { min-width: 210px; font-size: 1rem; }
 
-        .canvas-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+    .quiz-panel { margin-top: 12px; }
+    .quiz-progress { color: #576768; font-size: .78rem; font-weight: 900; }
+    .quiz-question { margin: 7px 0 11px; color: #173e35; font-size: 1.25rem; line-height: 1.2; }
+    .quiz-choices { display: grid; gap: 8px; }
+    .quiz-choices button { text-align: left; background: #fff; }
+    .quiz-choices button.correct { background: #c5f0cc; border-color: #2f7047; }
+    .quiz-choices button.incorrect { background: #ffd7cb; border-color: #9b4134; }
+    .quiz-feedback { min-height: 44px; margin: 10px 0 0; padding: 8px 10px; border-left: 5px solid #e1b53f; background: #fff1bd; font-size: .85rem; }
+    .finale {
+      max-width: 950px; margin: 26px auto; padding: clamp(20px,4vw,36px);
+      border: 5px solid #071920; background: var(--paper); box-shadow: 9px 9px 0 #071920;
+    }
+    .finale h2 { margin: 8px 0 10px; color: #20583c; font-size: clamp(1.7rem,5vw,3rem); line-height: 1.05; }
+    .reveal { display: inline-block; margin: 4px 0 15px; padding: 9px 14px; border: 4px solid #214d3d; background: var(--mint); color: #163d30; font-size: 1.2rem; font-weight: 1000; box-shadow: 4px 4px 0 #234c38; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 17px 0; }
+    .summary-grid section { padding: 11px; border: 2px solid #b5aa84; background: #fffbee; }
+    .summary-grid h3 { margin: 0 0 5px; color: #285249; font-size: .92rem; }
+    .summary-grid p { margin: 0; font-size: .83rem; }
 
-        .canvas-container {
-            background: #090d16;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            width: 100%;
-            height: 320px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            justify-content: center;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-        }
-
-        select, button {
-            background: #0f172a;
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            outline: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button {
-            font-weight: 600;
-            background: #2563eb;
-            border-color: #2563eb;
-        }
-
-        button:hover:not(:disabled) {
-            filter: brightness(1.1);
-            transform: translateY(-1px);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        button.btn-danger {
-            background: var(--danger);
-            border-color: var(--danger);
-        }
-
-        button.btn-warning {
-            background: var(--warning);
-            border-color: var(--warning);
-            color: #000;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .info-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .info-card h3 {
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-card.pros h3 { color: var(--success); }
-        .info-card.cons h3 { color: var(--danger); }
-        .info-card.quiz-card h3 { color: var(--primary); }
-
-        .info-card ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .info-card li {
-            font-size: 0.95rem;
-            line-height: 1.4;
-            color: var(--text-muted);
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .info-card li::before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .info-card.pros li::before { color: var(--success); }
-        .info-card.cons li::before { color: var(--danger); }
-
-        .quiz-option {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 8px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .quiz-option:hover {
-            border-color: var(--primary);
-            background: #1e293b;
-        }
-
-        .quiz-feedback {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .quiz-feedback.correct {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid var(--success);
-            color: #4ade80;
-            display: block;
-        }
-
-        .quiz-feedback.wrong {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid var(--danger);
-            color: #f87171;
-            display: block;
-        }
-
-        .status-msg {
-            text-align: center;
-            font-size: 0.95rem;
-            font-weight: 500;
-            min-height: 24px;
-            color: var(--primary);
-        }
-    </style>
+    @keyframes receiveGlow {
+      0%,100% { filter: brightness(1); }
+      50% { filter: brightness(1.45) drop-shadow(0 0 7px #fff166); }
+    }
+    @media (max-width: 950px) {
+      .columns { grid-template-columns: 1fr; }
+      .mission-rail { position: static; min-width: 0; }
+      .mission-list { grid-template-columns: repeat(5,minmax(115px,1fr)); overflow-x: auto; padding: 2px 2px 5px; }
+      .mission-row { grid-template-columns: 28px 1fr; }
+      .mission-number { width: 26px; height: 26px; }
+      .rail-note { display: none; }
+    }
+    @media (max-width: 700px) {
+      .topbar { padding: 13px 14px; }
+      .shell { padding: 0 12px 22px; }
+      .top-actions { width: 100%; justify-content: space-between; }
+      .score-chip { font-size: .75rem; }
+      .columns { gap: 12px; }
+      .mission-rail { padding: 10px; }
+      .mission-list { width: 100%; max-width: 100%; grid-template-columns: repeat(5,145px); }
+      .workbench { padding: 10px; }
+      .mission-heading { padding: 10px; }
+      .phase-tag { font-size: .7rem; }
+      .task-box { grid-template-columns: 1fr; gap: 4px; }
+      .task-status { max-width: none; text-align: left; }
+      .scene { height: 340px; }
+      .packet-tag { font-size: .58rem; }
+      .lower-grid { grid-template-columns: 1fr; }
+      .briefing, .summary-grid { grid-template-columns: 1fr; }
+      .intro { margin: 17px auto; padding: 20px; }
+      .mission-footer button { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html:not(.motion-choice-made) *, html:not(.motion-choice-made) *::before, html:not(.motion-choice-made) *::after {
+        scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important;
+      }
+    }
+    body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after {
+      scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important;
+    }
+    .accessibility-dialog {
+      width: min(520px, calc(100vw - 28px)); max-height: min(90vh, 760px); overflow: auto;
+      padding: 0; border: 4px solid #071920; border-radius: 4px; color: var(--ink);
+      background: var(--paper); box-shadow: 8px 8px 0 #071920;
+    }
+    .accessibility-dialog::backdrop { background: rgb(3 14 19 / 78%); }
+    .accessibility-content { padding: clamp(16px, 4vw, 24px); }
+    .accessibility-heading {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+      padding-bottom: 12px; border-bottom: 3px dashed #9c9b78;
+    }
+    .accessibility-heading h2 { margin: 0; color: #1c4d42; font-size: 1.35rem; line-height: 1.15; }
+    .accessibility-heading p { margin: 5px 0 0; font-size: .82rem; }
+    .accessibility-heading .close-accessibility { flex: 0 0 auto; min-width: 46px; padding: 6px 10px; }
+    .accessibility-option { margin: 14px 0 0; padding: 12px; border: 2px solid #9a967b; background: #fffbee; }
+    .accessibility-option legend { padding: 0 5px; color: #285249; font-weight: 900; }
+    .accessibility-option p { margin: 2px 0 9px; color: #3e595f; font-size: .8rem; }
+    .font-controls { display: flex; align-items: center; gap: 8px; }
+    .font-controls button { min-width: 54px; min-height: 48px; font-size: 1.15rem; }
+    .font-size-output { min-width: 96px; text-align: center; font-weight: 900; }
+    .accessibility-toggle { width: 100%; min-height: 48px; text-align: left; }
+    .accessibility-toggle[aria-pressed="true"] { border-color: #20583c; background: #c5f0cc; }
+    .accessibility-footer { display: flex; justify-content: space-between; gap: 9px; margin-top: 16px; }
+    .accessibility-footer button { flex: 1; }
+    body.high-contrast {
+      color: #fff; background: #000;
+      --paper: #000; --paper-2: #080808; --ink: #fff; --line: #ff0; --focus: #ff0; --shadow: #000;
+    }
+    body.high-contrast .mission-rail,
+    body.high-contrast .workbench,
+    body.high-contrast .intro,
+    body.high-contrast .finale,
+    body.high-contrast .panel,
+    body.high-contrast .mission-heading,
+    body.high-contrast .task-box,
+    body.high-contrast .scene-caption,
+    body.high-contrast .scene-scroll-hint,
+    body.high-contrast .break-model-note,
+    body.high-contrast .reflection,
+    body.high-contrast .briefing div,
+    body.high-contrast .summary-grid section,
+    body.high-contrast .quiz-feedback,
+    body.high-contrast .mission-row,
+    body.high-contrast .accessibility-option {
+      color: #fff; background: #000; border-color: #ff0;
+    }
+    body.high-contrast h2, body.high-contrast h3, body.high-contrast h4,
+    body.high-contrast p, body.high-contrast small, body.high-contrast strong,
+    body.high-contrast .eyebrow, body.high-contrast .rail-heading,
+    body.high-contrast .accessibility-heading h2, body.high-contrast .accessibility-option legend,
+    body.high-contrast .accessibility-option p, body.high-contrast .mission-heading h2,
+    body.high-contrast .mission-heading p, body.high-contrast .task-box strong,
+    body.high-contrast .task-box p, body.high-contrast .task-status,
+    body.high-contrast .scene-legend, body.high-contrast .panel h3,
+    body.high-contrast .panel p, body.high-contrast .reflection,
+    body.high-contrast .reflection strong, body.high-contrast .mission-footer p,
+    body.high-contrast .intro h2, body.high-contrast .intro .lead,
+    body.high-contrast .briefing b, body.high-contrast .quiz-question,
+    body.high-contrast .quiz-progress, body.high-contrast .finale h2,
+    body.high-contrast .summary-grid h3, body.high-contrast .summary-grid p {
+      color: #fff;
+    }
+    body.high-contrast button, body.high-contrast select,
+    body.high-contrast .mission-row.current, body.high-contrast .quiz-choices button,
+    body.high-contrast .mission-number {
+      color: #fff; background: #111; border-color: #ff0;
+    }
+    body.high-contrast .score-chip, body.high-contrast .log,
+    body.high-contrast .packet-status, body.high-contrast .node-label,
+    body.high-contrast .node-status, body.high-contrast .progress-track {
+      color: #fff; background: #000; border-color: #ff0;
+    }
+    body.high-contrast .score-chip b, body.high-contrast .brand h1,
+    body.high-contrast .brand-mark { color: #ff0; }
+    body.high-contrast .accessibility-toggle[aria-pressed="true"],
+    body.high-contrast .quiz-choices button.correct {
+      color: #000; background: #ff0;
+    }
+    body.high-contrast .quiz-choices button.incorrect { color: #fff; background: #6b0000; }
+    body.high-contrast .log p.good, body.high-contrast .log p.bad, body.high-contrast .log p.info { color: #fff; }
+    body.high-contrast .mission-row.complete, body.high-contrast .mission-row.current,
+    body.high-contrast .mission-row small { color: #fff; }
+    body.high-contrast .scene-caption, body.high-contrast .packet-tag,
+    body.high-contrast .reveal, body.high-contrast .phase-tag,
+    body.high-contrast .intro-mark, body.high-contrast .mission-row.current .mission-number {
+      color: #000; background: #ff0; border-color: #ff0;
+    }
+    body.high-contrast .rail-note,
+    body.high-contrast .rail-note b {
+      color: #000; background: #ff0; border-color: #ff0;
+    }
+    body.high-contrast .node.destination { outline-color: #ff0; filter: none; }
+    body.high-contrast .node.destination::before { color: #000; background: #ff0; border-color: #000; }
+    @media (max-width: 700px) {
+      .accessibility-footer { flex-direction: column; }
+      .accessibility-footer button { width: 100%; }
+      .font-size-output { min-width: 84px; }
+      .scoreboard { min-width: 0; flex-wrap: wrap; }
+      .score-chip { white-space: normal; }
+      body.high-contrast .rail-note { display: block; }
+      .accessibility-content { min-width: 0; }
+      .accessibility-heading {
+        display: grid; grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start; gap: 8px; position: sticky; top: 0; z-index: 3;
+        padding-top: 8px; background: var(--paper);
+      }
+      .accessibility-heading > div { display: contents; }
+      .accessibility-heading h2 { min-width: 0; overflow-wrap: anywhere; }
+      .accessibility-heading p { grid-column: 1 / -1; overflow-wrap: anywhere; }
+      .accessibility-heading .close-accessibility { max-width: 100%; }
+      .accessibility-option { min-width: 0; }
+      .accessibility-option p { overflow-wrap: anywhere; }
+    }
+  </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Pular para o jogo</a>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">⌁</div>
+      <div>
+        <h1>REDE EM MISSÃO</h1>
+        <p>O cabo misterioso · laboratório de redes</p>
+      </div>
+    </div>
+    <div class="top-actions" aria-label="Placar e controles do jogo">
+      <div class="scoreboard" aria-live="polite">
+        <span class="score-chip">✦ XP <b id="score">0</b></span>
+        <span class="score-chip">🏅 Medalhas <b id="medals">0</b></span>
+        <span class="score-chip">Etapa <b id="missionStat">—</b></span>
+      </div>
+      <button class="quiet" id="restartButton" type="button">↺ Reiniciar</button>
+      <button class="blue-btn" id="accessibilityButton" type="button" aria-haspopup="dialog" aria-controls="accessibilityDialog">♿ Acessibilidade</button>
+    </div>
+  </header>
 
-    <header>
-        <h1>🎮 Simulação: Topologia em Barramento (Bus)</h1>
-        <p>Aprenda visualmente como funciona, suas vantagens, desvantagens e teste seus conhecimentos!</p>
-    </header>
+  <dialog class="accessibility-dialog" id="accessibilityDialog" role="dialog" aria-modal="true" aria-labelledby="accessibilityTitle" aria-describedby="accessibilityInstructions">
+    <div class="accessibility-content">
+      <div class="accessibility-heading">
+        <div>
+          <h2 id="accessibilityTitle">Ajustes de acessibilidade</h2>
+          <p id="accessibilityInstructions">As preferências ficam salvas neste dispositivo. Use Tab para percorrer os controles; Esc fecha este painel.</p>
+        </div>
+        <button class="quiet close-accessibility" id="closeAccessibilityButton" type="button" aria-label="Fechar ajustes de acessibilidade">Fechar</button>
+      </div>
+      <fieldset class="accessibility-option">
+        <legend>Tamanho do texto</legend>
+        <p>Escolha um tamanho entre 16 e 24 pixels.</p>
+        <div class="font-controls">
+          <button class="quiet" id="decreaseFontButton" type="button" aria-label="Diminuir tamanho do texto">A−</button>
+          <output class="font-size-output" id="fontSizeValue" aria-live="polite">18 px</output>
+          <button class="quiet" id="increaseFontButton" type="button" aria-label="Aumentar tamanho do texto">A+</button>
+        </div>
+      </fieldset>
+      <fieldset class="accessibility-option">
+        <legend>Contraste</legend>
+        <p>Use uma paleta preto e amarelo com contornos reforçados.</p>
+        <button class="accessibility-toggle" id="contrastToggle" type="button" aria-pressed="false">Alto contraste: desativado</button>
+      </fieldset>
+      <fieldset class="accessibility-option">
+        <legend>Movimento</legend>
+        <p>Pacotes e efeitos visuais aparecem sem deslocamento animado. O envio e o registro continuam normalmente.</p>
+        <button class="accessibility-toggle" id="motionToggle" type="button" aria-pressed="false">Redução de movimento: desativada</button>
+      </fieldset>
+      <div class="accessibility-footer">
+        <button class="quiet" id="resetAccessibilityButton" type="button">Restaurar padrões</button>
+      </div>
+    </div>
+  </dialog>
 
-    <div class="container">
-        <!-- ÁREA DO SIMULADOR INTERATIVO -->
-        <div class="canvas-card">
-            <div class="canvas-header">
-                <h2>Simulador Prático</h2>
-                <div class="status-msg" id="status-text">Selecione os computadores e clique em "Transmitir Dados"</div>
-            </div>
+  <main id="main" class="shell">
+    <section id="intro" class="intro" aria-labelledby="introTitle">
+      <span class="intro-mark">CHAMADO DO LABORATÓRIO · 01</span>
+      <h2 id="introTitle">Um cabo.<br>Um mistério.</h2>
+      <p class="lead">Cinco computadores estão trocando sinais por uma instalação antiga. Siga os pacotes, provoque falhas e descubra como essa rede se comporta — antes de receber o nome do padrão.</p>
+      <div class="briefing">
+        <div><b>🎯 Sua missão</b>Observar o caminho dos dados e separar defeito de equipamento de defeito no cabo.</div>
+        <div><b>🧰 Seu kit</b>Um roteador, cinco PCs, um mapa de rede e um diário para suas descobertas.</div>
+      </div>
+      <button class="primary" id="startButton" type="button">▶ Iniciar missão</button>
+    </section>
 
-            <div class="canvas-container">
-                <canvas id="netCanvas"></canvas>
-            </div>
+    <div id="game" class="columns hidden">
+      <aside class="mission-rail" aria-label="Etapas da missão">
+        <h2 class="rail-heading">Rota da investigação</h2>
+        <nav id="missionList" class="mission-list" aria-label="Progresso das etapas"></nav>
+        <p class="rail-note"><b>📡 Dica de campo</b>Observe a linha principal e as derivações. Um sinal pode ser visto por mais de um computador sem ser aceito por todos.</p>
+      </aside>
 
-            <div class="controls">
-                <div class="control-group">
-                    <label>Origem:</label>
-                    <select id="select-src">
-                        <option value="0">PC A</option>
-                        <option value="1">PC B</option>
-                        <option value="2" selected>PC C</option>
-                        <option value="3">PC D</option>
-                    </select>
-                </div>
+      <section class="workbench" aria-labelledby="missionTitle">
+        <header class="mission-heading">
+          <div>
+            <div class="eyebrow" id="missionEyebrow">MISSÃO 01</div>
+            <h2 id="missionTitle" tabindex="-1">Observação</h2>
+            <p id="missionDesc"></p>
+          </div>
+          <span class="phase-tag" id="phaseTag">EM ANDAMENTO</span>
+        </header>
 
-                <div class="control-group">
-                    <label>Destino:</label>
-                    <select id="select-dst">
-                        <option value="0">PC A</option>
-                        <option value="1" selected>PC B</option>
-                        <option value="2">PC C</option>
-                        <option value="3">PC D</option>
-                    </select>
-                </div>
-
-                <button onclick="sendData()">✉️ Transmitir Dados</button>
-                <button class="btn-danger" id="btn-cut" onclick="toggleCableBreak()">✂️ Romper Cabo Principal</button>
-                <button class="btn-warning" onclick="resetSim()">🔄 Restaurar Rede</button>
-            </div>
+        <div class="task-box">
+          <div>
+            <strong>OBJETIVO DE CAMPO</strong>
+            <p id="objective"></p>
+            <div class="progress-track" role="progressbar" aria-label="Progresso da missão" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar"><span id="progress"></span></div>
+          </div>
+          <div class="task-status" id="taskStatus" aria-live="polite">Aguardando ação</div>
         </div>
 
-        <!-- PAINEL TEÓRICO DE VANTAGENS E DESVANTAGENS -->
-        <div class="info-grid">
-            <div class="info-card pros">
-                <h3>✅ Vantagens</h3>
-                <ul>
-                    <li><b>Baixo Custo:</b> Requer muito menos cabos que outras topologias (como a topologia em Estrela).</li>
-                    <li><b>Fácil Instalação:</b> Simples de montar e conectar novos computadores em linha reta.</li>
-                    <li><b>Ideal para Redes Pequenas:</b> Funciona bem com poucos equipamentos sem exigir roteadores ou switches centrais.</li>
-                </ul>
+        <div class="scene-wrap">
+          <div class="scene-caption">MAPA AO VIVO · SINAL EM TRÂNSITO</div>
+          <p id="packetStatus" class="packet-status" role="status" aria-live="polite" aria-atomic="true">Nenhum pacote em trânsito. Selecione um destinatário para destacar o caminho.</p>
+          <div class="scene-scroll" tabindex="0" aria-label="Mapa da rede. Em telas pequenas, deslize horizontalmente para ver toda a instalação.">
+            <div id="network" class="scene" role="img" aria-label="Mapa com roteador ligado por uma derivação separada ao cabo compartilhado, cinco computadores derivados do tronco e terminações visíveis nas duas pontas.">
+              <span class="scene-kicker" aria-hidden="true">REDE DO LABORATÓRIO</span>
+              <div class="bus-trunk" aria-hidden="true"></div>
+              <div class="router-lead" aria-hidden="true"></div>
+              <div class="terminator left" aria-hidden="true"></div>
+              <div class="terminator right" aria-hidden="true"></div>
             </div>
-
-            <div class="info-card cons">
-                <h3>❌ Desvantagens</h3>
-                <ul>
-                    <li><b>Ponto Único de Falha:</b> Se o cabo central se romper, TODA a rede para de funcionar imediatamente.</li>
-                    <li><b>Colisões de Dados:</b> Como o meio é compartilhado, múltiplos envios simultâneos causam colisões de sinal.</li>
-                    <li><b>Difícil Diagnóstico:</b> Identificar em qual ponto exato o cabo quebrou exige testar segmento por segmento.</li>
-                </ul>
-            </div>
-
-            <!-- QUIZ INTERATIVO -->
-            <div class="info-card quiz-card">
-                <h3>🧠 Quiz de Fixação (<span id="quiz-score">Pontos: 0/3</span>)</h3>
-                <div id="quiz-container">
-                    <p id="quiz-question" style="font-weight: 600; font-size: 0.95rem; margin-top: 4px;"></p>
-                    <div id="quiz-options"></div>
-                    <div id="quiz-feedback" class="quiz-feedback"></div>
-                    <button id="btn-next-quiz" style="display: none; margin-top: 10px; width: 100%;" onclick="nextQuestion()">Próxima Pergunta ➡️</button>
-                </div>
-            </div>
+          </div>
+          <p id="breakModelNote" class="break-model-note hidden" role="status">⚠ Modelo didático simplificado: o trecho além da ruptura fica sem alcance a partir do roteador; o restante do segmento não está declarado saudável. Em um cabo coaxial real, ruptura ou terminação incorreta pode causar reflexões e afetar uma parte maior ou todo o segmento.</p>
+          <p class="scene-scroll-hint">O roteador é o gateway conectado por derivação própria; os cinco PCs também derivam do mesmo tronco contínuo, terminado nas duas pontas.</p>
         </div>
+        <div class="scene-legend" aria-label="Legenda do mapa">
+          <span class="legend-item"><i class="legend-dot" aria-hidden="true"></i> Pacote em movimento</span>
+          <span class="legend-item"><i class="legend-dot shared" aria-hidden="true"></i> Meio compartilhado</span>
+          <span class="legend-item"><i class="legend-dot failed" aria-hidden="true"></i> Falha / isolamento</span>
+        </div>
+
+        <div class="lower-grid" id="controlsPanel">
+          <section class="panel" aria-labelledby="controlsTitle">
+            <h3 id="controlsTitle">🕹️ Painel de operação</h3>
+            <p id="actionGuide"></p>
+            <button type="button" class="send-all" id="sendAllButton">📡 Enviar um pacote endereçado a cada PC (5 envios)</button>
+            <div class="send-grid" id="sendButtons" aria-label="Enviar pacote endereçado"></div>
+            <div class="control-group" id="missionControls" style="margin-top:11px"></div>
+          </section>
+          <section class="panel" aria-labelledby="logTitle">
+            <h3 id="logTitle">🗒️ Diário de rede</h3>
+            <p>O laboratório registra o que aconteceu, não só se deu certo.</p>
+            <div id="log" class="log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Eventos recentes da rede">
+              <p class="info">› Aguardando início da missão.</p>
+            </div>
+            <button class="quiet" type="button" id="clearLogButton" style="margin-top:8px">Limpar diário</button>
+          </section>
+        </div>
+        <section id="quizPanel" class="panel quiz-panel hidden" aria-labelledby="quizTitle">
+          <h3 id="quizTitle">🧠 Desafio de dedução</h3>
+          <div id="quizContent"></div>
+        </section>
+
+        <div class="reflection" id="reflection" aria-live="polite"></div>
+        <footer class="mission-footer">
+          <p id="footerHint"></p>
+          <button type="button" class="primary hidden" id="nextButton">Próxima missão →</button>
+        </footer>
+      </section>
     </div>
 
-    <script>
-        // --- ESTADO DO SIMULADOR ---
-        const canvas = document.getElementById('netCanvas');
-        const ctx = canvas.getContext('2d');
+    <section id="finale" class="finale hidden" aria-labelledby="finalTitle">
+      <span class="intro-mark">INVESTIGAÇÃO CONCLUÍDA · RELATÓRIO DE CAMPO</span>
+      <h2 id="finalTitle">Você desvendou o cabo.</h2>
+      <div class="reveal">O padrão é a topologia em barramento.</div>
+      <p>Seu mapa mostrava um meio físico contínuo compartilhado: vários computadores se conectam por derivações ao mesmo tronco, com terminações nas pontas. O sinal percorre o segmento; cada dispositivo pode percebê-lo, mas só o destinatário correto processa o pacote.</p>
+      <div class="summary-grid">
+        <section><h3>🧭 Como reconhecer</h3><p>Um cabo principal percorre o segmento. Os equipamentos entram por derivações, em vez de cada um ter um cabo dedicado até um concentrador central.</p></section>
+        <section><h3>✅ Vantagem e contexto</h3><p>Uma instalação pequena e simples pode usar pouco cabeamento e ser econômica. É útil para aprender o conceito e entender redes legadas.</p></section>
+        <section><h3>⚠️ Limites</h3><p>O meio é compartilhado: a banda é dividida e implementações antigas podem sofrer colisões/contenda. Crescer a rede é limitado; uma ruptura ou terminação ruim no tronco pode afetar vários nós ou todo o segmento, por exemplo devido a reflexões de sinal. O exercício de ruptura é apenas um modelo simplificado de alcance, não uma previsão do comportamento físico real.</p></section>
+        <section><h3>🧰 Diagnóstico</h3><p>Confira alimentação, portas e cabos do roteador; inspecione o cabo principal, conectores e terminadores; isole o PC defeituoso e teste novamente. Um PC com falha não derruba, por si só, os demais no segmento.</p></section>
+        <section><h3>🌐 Roteador não é concentrador</h3><p>O roteador oferece gateway para outras redes. Se ele falha, novos pacotes originados nele ou o acesso externo param, mas comunicação local entre PCs saudáveis no mesmo segmento ainda pode funcionar.</p></section>
+        <section><h3>📍 Onde faz sentido</h3><p>Topologia em barramento é sobretudo um padrão didático/histórico e aparece em laboratório ou redes pequenas/legadas. Não é uma recomendação geral para redes modernas.</p></section>
+      </div>
+      <p id="finalScore"></p>
+      <button class="primary" type="button" id="playAgainButton">↺ Jogar novamente</button>
+    </section>
+  </main>
 
-        let isCableBroken = false;
-        let signals = [];
-        let animationFrameId = null;
+  <script>
+    "use strict";
+    const missions = [
+      {
+        tag: "RASTRO DO PACOTE",
+        title: "Siga o sinal",
+        desc: "Descubra por onde os dados passam antes de chegar ao computador certo.",
+        objective: "Envie pacotes do roteador a cada um dos 5 PCs e acompanhe o trajeto comum.",
+        guide: "Escolha os cinco destinos, um por vez. Repare que todos os pontos conectados ao cabo veem o sinal; só o destino recebe a confirmação.",
+        hint: "O que os cinco envios tiveram em comum: o destino ou o caminho?",
+        reflection: "O pacote elétrico percorre um único tronco compartilhado. Os outros dispositivos podem observar o sinal, mas apenas o endereço de destino aceita os dados.",
+        progress: () => delivered.size,
+        total: 5
+      },
+      {
+        tag: "EQUIPAMENTO ISOLADO",
+        title: "Um PC parou",
+        desc: "Um computador apresenta defeito. Investigue sem culpar toda a rede.",
+        objective: "Escolha um PC, simule a falha, tente enviar para ele e depois envie para outro PC saudável.",
+        guide: "Selecione um computador e simule a falha. Em seguida, teste o próprio PC com defeito e outro que esteja funcionando.",
+        hint: "A falha está no equipamento ou no cabo compartilhado?",
+        reflection: "Um PC com defeito deixa de receber, mas não interrompe o tronco. Os demais computadores ativos continuam compartilhando o segmento.",
+        progress: () => (faultyPc !== null ? (faultyPcTested ? 1 : 0) + (healthyAfterPcFault ? 1 : 0) : 0),
+        total: 2
+      },
+      {
+        tag: "GATEWAY FORA DO AR",
+        title: "O roteador silenciou",
+        desc: "Diferencie a função de gateway da comunicação local no segmento.",
+        objective: "Desligue o roteador, tente enviar a partir dele e teste comunicação entre dois PCs saudáveis.",
+        guide: "Simule a falha do roteador. Tente um envio do roteador e, sem reativá-lo, faça um teste local entre dois PCs ativos.",
+        hint: "Sem gateway, os PCs ainda conseguem conversar dentro da mesma rede local?",
+        reflection: "O roteador não é um concentrador central. A falha do gateway interrompe os envios originados nele e o acesso a outras redes, mas não necessariamente a comunicação local entre PCs saudáveis.",
+        progress: () => (routerFailed ? (routerSendTried ? 1 : 0) + (localTested ? 1 : 0) : 0),
+        total: 2
+      },
+      {
+        tag: "INSPEÇÃO DO MEIO",
+        title: "O cabo misterioso",
+        desc: "Agora o problema não está num computador: investigue o meio físico compartilhado.",
+        objective: "Restaure os equipamentos, simule uma ruptura no modelo didático, teste o alcance ilustrado e repare o cabo.",
+        guide: "Restaure os equipamentos e rompa o tronco após um PC. O mapa simplifica o alcance a partir do roteador; ele não afirma que o outro trecho ficou saudável. Em cabo coaxial real, ruptura ou terminação incorreta pode afetar parte maior ou todo o segmento.",
+        hint: "A ruptura é um modelo simplificado de alcance, não uma previsão física; inspecione cabo, conectores e terminações.",
+        reflection: "A simulação só ilustra a perda de alcance além do corte. Não conclua que o trecho anterior permaneceu saudável: reflexões e terminação incorreta podem afetar parte maior ou todo o segmento coaxial.",
+        progress: () => (allDevicesReset ? 1 : 0) + (cableSimulated ? 1 : 0) + (breakTested ? 1 : 0) + (cableRepaired ? 1 : 0),
+        total: 4
+      },
+      {
+        tag: "DEDUÇÃO FINAL",
+        title: "Feche o diagnóstico",
+        desc: "Use as pistas do laboratório para identificar o padrão e recomendar uma resposta.",
+        objective: "Resolva o diagnóstico e, por último, identifique a topologia pelas pistas reunidas.",
+        guide: "Responda sobre contexto de uso e diagnóstico. A pergunta final combina as pistas das etapas: cabo principal compartilhado, derivações e efeitos das falhas.",
+        hint: "Sintetize o que observou: todos compartilham o mesmo caminho, cada PC usa uma derivação e falhas no tronco afetam o segmento.",
+        reflection: "Evidências reunidas: um tronco compartilhado, PCs ligados por derivações, comunicação local sem o gateway e risco de impacto amplo quando o cabo principal falha.",
+        progress: () => [4, 5].filter(index => quizAnswers.has(index)).length,
+        total: 2
+      }
+    ];
 
-        const pcs = [
-            { id: 0, label: "PC A", ip: "192.168.0.1", x: 0.15, status: "idle", msg: "" },
-            { id: 1, label: "PC B", ip: "192.168.0.2", x: 0.38, status: "idle", msg: "" },
-            { id: 2, label: "PC C", ip: "192.168.0.3", x: 0.62, status: "idle", msg: "" },
-            { id: 3, label: "PC D", ip: "192.168.0.4", x: 0.85, status: "idle", msg: "" }
-        ];
+    const quizQuestions = [
+      {
+        question: "Ao enviar um pacote para um computador, o que acontece com o sinal nos demais PCs ativos ligados ao meio?",
+        choices: [
+          "Eles observam o sinal, mas somente o computador endereçado aceita o pacote.",
+          "Cada um recebe uma cópia dedicada por um cabo independente.",
+          "O sinal passa apenas pelo computador vizinho mais próximo.",
+          "Nenhum deles vê o sinal até o roteador encaminhá-lo individualmente."
+        ],
+        correct: 0,
+        explain: "O sinal percorre o meio compartilhado: outros nós ativos podem observá-lo, mas só o destinatário processa o pacote."
+      },
+      {
+        question: "Um PC falha, mas o cabo principal e o restante da rede estão bons. O que se espera?",
+        choices: [
+          "Todos os outros PCs param, pois dependem do PC que falhou.",
+          "O tronco é automaticamente dividido em duas redes.",
+          "O PC com defeito não recebe; os outros nós ativos ainda podem comunicar.",
+          "O roteador passa a funcionar como terminador do cabo."
+        ],
+        correct: 2,
+        explain: "Uma falha isolada de computador não rompe o meio compartilhado, então os demais nós ativos continuam funcionando."
+      },
+      {
+        question: "O roteador/gateway falhou. Qual conclusão sobre os PCs saudáveis no mesmo segmento é correta?",
+        choices: [
+          "Eles perdem toda comunicação local, pois o roteador concentra todas as conexões.",
+          "O envio originado no roteador e o acesso a outras redes param, mas tráfego local ainda pode funcionar.",
+          "Os computadores se conectam uns aos outros por novas linhas independentes.",
+          "O cabo principal deixa de precisar de terminações."
+        ],
+        correct: 1,
+        explain: "O roteador é gateway, não concentrador central da topologia. Sua falha não impede necessariamente a comunicação local no mesmo segmento."
+      },
+      {
+        question: "Por que esse arranjo pode aparecer em uma rede pequena ou num laboratório legado?",
+        choices: [
+          "Porque oferece um cabo dedicado e banda exclusiva para cada computador.",
+          "Porque nunca tem colisões nem ponto físico de falha.",
+          "Porque cresce sem limite e dispensa qualquer diagnóstico.",
+          "Porque uma instalação simples pode ser econômica e ajuda a estudar conceitos de redes compartilhadas."
+        ],
+        correct: 3,
+        explain: "A simplicidade e o baixo custo de cabeamento podem fazer sentido em cenários pequenos/legados e no ensino, mas não tornam o padrão ideal para redes modernas."
+      },
+      {
+        question: "Vários PCs perderam o sinal depois de uma ruptura. Qual é uma boa primeira resposta de diagnóstico?",
+        choices: [
+          "Inspecionar o cabo principal, conectores e terminadores; localizar e reparar a ruptura.",
+          "Trocar todos os computadores sem testar o meio.",
+          "Desligar apenas o roteador e assumir que o cabo está bom.",
+          "Aumentar a banda do gateway para corrigir o rompimento físico."
+        ],
+        correct: 0,
+        explain: "Uma falha no tronco pode isolar vários nós. Inspecione conectores e terminações, localize o ponto defeituoso e repare o meio."
+      },
+      {
+        question: "Considerando suas conclusões ao longo da missão — um cabo principal compartilhado, computadores conectados por derivações e os efeitos observados nas falhas — qual topologia de rede foi estudada?",
+        choices: ["Estrela", "Barramento", "Anel", "Árvore", "Malha"],
+        correct: 1,
+        explain: "As pistas acumuladas — um tronco compartilhado, derivações individuais e efeitos das falhas no meio — identificam a topologia em barramento."
+      }
+    ];
 
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
+    const $ = id => document.getElementById(id);
+    const ACCESSIBILITY_STORAGE_KEY = "redeEmMissao.accessibility.v1";
+    const DEFAULT_FONT_SIZE = 18;
+    const systemMotionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let activePacketAnimationFinish = null;
+    let accessibilityPreferences = {
+      fontSize: DEFAULT_FONT_SIZE,
+      highContrast: false,
+      reduceMotion: null
+    };
+
+    function loadAccessibilityPreferences() {
+      try {
+        const saved = JSON.parse(window.localStorage.getItem(ACCESSIBILITY_STORAGE_KEY) || "null");
+        if (!saved || typeof saved !== "object") return;
+        if (Number.isInteger(saved.fontSize) && saved.fontSize >= 16 && saved.fontSize <= 24 && saved.fontSize % 2 === 0) {
+          accessibilityPreferences.fontSize = saved.fontSize;
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // --- RENDERIZAÇÃO GRÁFICA ---
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const busY = canvas.height * 0.65;
-            const startX = 50;
-            const endX = canvas.width - 50;
-            const breakX = canvas.width * 0.5;
-
-            // 1. Desenha Cabo Barramento Central
-            if (!isCableBroken) {
-                // Cabo Íntegro
-                ctx.beginPath();
-                ctx.moveTo(startX, busY);
-                ctx.lineTo(endX, busY);
-                ctx.strokeStyle = '#475569';
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(startX, busY);
-                ctx.lineTo(endX, busY);
-                ctx.strokeStyle = '#38bdf8';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            } else {
-                // Cabo Rompido no Meio
-                // Lado Esquerdo
-                ctx.beginPath();
-                ctx.moveTo(startX, busY);
-                ctx.lineTo(breakX - 25, busY);
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 10;
-                ctx.stroke();
-
-                // Lado Direito
-                ctx.beginPath();
-                ctx.moveTo(breakX + 25, busY);
-                ctx.lineTo(endX, busY);
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 10;
-                ctx.stroke();
-
-                // Ícone de Corte/Faísca
-                ctx.fillStyle = '#ef4444';
-                ctx.font = '22px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('⚡ CABO ROMPIDO ⚡', breakX, busY + 35);
-            }
-
-            // 2. Terminadores nas Pontas (50 Ohms)
-            drawTerminator(startX, busY, 'left');
-            drawTerminator(endX, busY, 'right');
-
-            // 3. Desenha Computadores e Conexões (Drop Cables)
-            const pcY = canvas.height * 0.25;
-            pcs.forEach(pc => {
-                const px = canvas.width * pc.x;
-
-                // Cabo de Derivação
-                ctx.beginPath();
-                ctx.moveTo(px, busY);
-                ctx.lineTo(px, pcY + 35);
-                ctx.strokeStyle = '#64748b';
-                ctx.lineWidth = 4;
-                ctx.stroke();
-
-                // Conector em T (BNC)
-                ctx.fillStyle = '#cbd5e1';
-                ctx.fillRect(px - 6, busY - 6, 12, 12);
-
-                // Gabinete/Monitor do PC
-                ctx.fillStyle = pc.status === 'sending' ? '#2563eb' : 
-                              (pc.status === 'accepted' ? '#16a34a' : 
-                              (pc.status === 'discarded' ? '#dc2626' : '#1e293b'));
-                ctx.strokeStyle = pc.status === 'idle' ? '#475569' : '#ffffff';
-                ctx.lineWidth = 2;
-
-                ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(px - 40, pcY - 25, 80, 60, 8);
-                else ctx.rect(px - 40, pcY - 25, 80, 60);
-                ctx.fill();
-                ctx.stroke();
-
-                // Tela
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(px - 34, pcY - 18, 68, 36);
-
-                // Texto do PC
-                ctx.fillStyle = '#38bdf8';
-                ctx.font = 'bold 12px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(pc.label, px, pcY - 2);
-
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '10px monospace';
-                ctx.fillText(pc.ip, px, pcY + 12);
-
-                // Mensagem de Status sobre o PC
-                if (pc.msg) {
-                    ctx.fillStyle = pc.status === 'accepted' ? '#4ade80' : 
-                                  (pc.status === 'discarded' ? '#f87171' : '#fde047');
-                    ctx.font = 'bold 11px sans-serif';
-                    ctx.fillText(pc.msg, px, pcY - 32);
-                }
-            });
-
-            // 4. Desenha Pacotes de Sinais
-            signals.forEach(s => {
-                ctx.beginPath();
-                ctx.arc(s.x, busY, 7, 0, Math.PI * 2);
-                ctx.fillStyle = s.color || '#38bdf8';
-                ctx.shadowColor = s.color || '#38bdf8';
-                ctx.shadowBlur = 10;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-
-            updateSignals();
-            animationFrameId = requestAnimationFrame(draw);
+        if (typeof saved.highContrast === "boolean") accessibilityPreferences.highContrast = saved.highContrast;
+        if (typeof saved.reduceMotion === "boolean" || saved.reduceMotion === null) {
+          accessibilityPreferences.reduceMotion = saved.reduceMotion;
         }
+      } catch {
+        // Storage may be disabled or contain invalid data; defaults remain usable.
+      }
+    }
 
-        // --- LÓGICA DE MOVIMENTO DOS SINAIS ---
-        function updateSignals() {
-            const busY = canvas.height * 0.65;
-            const startX = 50;
-            const endX = canvas.width - 50;
-            const breakX = canvas.width * 0.5;
+    function effectiveReducedMotion() {
+      return accessibilityPreferences.reduceMotion === null
+        ? systemMotionPreference.matches
+        : accessibilityPreferences.reduceMotion;
+    }
 
-            for (let i = signals.length - 1; i >= 0; i--) {
-                let s = signals[i];
-                s.x += s.dir * s.speed;
+    function saveAccessibilityPreferences() {
+      try {
+        window.localStorage.setItem(ACCESSIBILITY_STORAGE_KEY, JSON.stringify(accessibilityPreferences));
+      } catch {
+        // Keep the current session usable when persistent storage is unavailable.
+      }
+    }
 
-                // Teste de interrupção se o cabo estiver quebrado
-                if (isCableBroken && Math.abs(s.x - breakX) < 20) {
-                    signals.splice(i, 1);
-                    setStatus("❌ Transmissão falhou! O cabo está rompido.", "var(--danger)");
-                    continue;
-                }
+    function applyAccessibilityPreferences() {
+      document.documentElement.style.setProperty("--body-size", `${accessibilityPreferences.fontSize}px`);
+      document.body.classList.toggle("high-contrast", accessibilityPreferences.highContrast);
+      document.body.classList.toggle("reduce-motion", effectiveReducedMotion());
+      document.documentElement.classList.toggle("motion-choice-made", accessibilityPreferences.reduceMotion !== null);
+      if (effectiveReducedMotion()) {
+        document.querySelectorAll(".node.observing").forEach(node => node.classList.remove("observing"));
+        activePacketAnimationFinish?.();
+      }
+      $("fontSizeValue").textContent = `${accessibilityPreferences.fontSize} px`;
+      $("decreaseFontButton").disabled = accessibilityPreferences.fontSize <= 16;
+      $("increaseFontButton").disabled = accessibilityPreferences.fontSize >= 24;
+      $("contrastToggle").setAttribute("aria-pressed", String(accessibilityPreferences.highContrast));
+      $("contrastToggle").textContent = `Alto contraste: ${accessibilityPreferences.highContrast ? "ativado" : "desativado"}`;
+      const reducedMotion = effectiveReducedMotion();
+      const motionSource = accessibilityPreferences.reduceMotion === null ? " (preferência do sistema)" : "";
+      $("motionToggle").setAttribute("aria-pressed", String(reducedMotion));
+      $("motionToggle").textContent = `Redução de movimento: ${reducedMotion ? "ativada" : "desativada"}${motionSource}`;
+    }
 
-                // Verifica se alcançou os computadores
-                pcs.forEach(pc => {
-                    const px = canvas.width * pc.x;
-                    if (Math.abs(s.x - px) < 4 && !s.reached.includes(pc.id)) {
-                        s.reached.push(pc.id);
+    loadAccessibilityPreferences();
+    applyAccessibilityPreferences();
 
-                        if (pc.id === s.srcId) {
-                            // Origem
-                        } else if (pc.id === s.dstId) {
-                            pc.status = 'accepted';
-                            pc.msg = '✅ ACEITO!';
-                        } else {
-                            pc.status = 'discarded';
-                            pc.msg = '🚫 DESCARTADO';
-                        }
-                    }
-                });
+    const positions = [23, 39, 55, 71, 86];
+    let current = 0;
+    let score = 0;
+    let medals = 0;
+    let started = false;
+    let delivered = new Set();
+    let observed = new Set();
+    let pcFailed = Array(5).fill(false);
+    let faultyPc = null;
+    let faultyPcTested = false;
+    let healthyAfterPcFault = false;
+    let routerFailed = false;
+    let routerSendTried = false;
+    let localTested = false;
+    let localPair = null;
+    let allDevicesReset = false;
+    let cableBroken = false;
+    let cableSimulated = false;
+    let breakAfter = 2;
+    let breakTested = false;
+    let cableRepaired = false;
+    let quizIndex = 0;
+    let quizCorrect = 0;
+    let quizAnswers = new Set();
+    let quizAnswered = false;
+    let quizPoints = new Set();
+    let renderedQuizIndex = -1;
+    let activeDestination = null;
+    let networkBusy = false;
+    let missionComplete = Array(5).fill(false);
 
-                // Absorção nos Terminadores
-                if (s.x <= startX || s.x >= endX) {
-                    signals.splice(i, 1);
-                }
-            }
+    function log(message, type = "info") {
+      const item = document.createElement("p");
+      item.className = type;
+      item.textContent = "› " + message;
+      $("log").prepend(item);
+      while ($("log").children.length > 35) $("log").lastElementChild.remove();
+    }
+
+    function statusForPc(index) {
+      if (pcFailed[index]) return "FALHA NO PC";
+      if (cableBroken && index + 1 > breakAfter) return "SEM ALCANCE NO MODELO";
+      if (cableBroken) return "SINAL NÃO GARANTIDO";
+      if (networkBusy && activeDestination === index + 1) return "PACOTE A CAMINHO";
+      if (activeDestination === index + 1 && delivered.has(index + 1)) return "PACOTE RECEBIDO";
+      if (observed.has(index + 1)) return "SINAL OBSERVADO";
+      return "AGUARDANDO";
+    }
+
+    function drawNetwork() {
+      const network = $("network");
+      const staticScene = `<span class="scene-kicker" aria-hidden="true">REDE DO LABORATÓRIO</span>
+        <div class="bus-trunk" aria-hidden="true"></div><div class="router-lead" aria-hidden="true"></div>
+        <div class="terminator left" aria-hidden="true"></div><div class="terminator right" aria-hidden="true"></div>`;
+      let html = staticScene;
+      if (cableBroken) {
+        html = html.replace('<div class="bus-trunk" aria-hidden="true"></div>', "");
+        const x = positions[breakAfter - 1] + 7.5;
+        const leftWidth = x - 9;
+        const rightWidth = 92 - x;
+        html += `<div class="broken-left visible" style="width:${leftWidth}%;"></div>
+          <div class="broken-right visible" style="width:${rightWidth}%;"></div>
+          <div class="break-gap visible" style="left:${x}%;"></div>
+          <div class="bus-break visible" style="left:${x}%" role="img" aria-label="Ruptura no cabo principal após PC ${breakAfter}"></div>`;
+        network.setAttribute("aria-label", `Modelo didático simplificado de alcance: ruptura após PC ${breakAfter}; PCs ${breakAfter + 1} a 5 ficam sem alcance a partir do roteador no modelo. Os demais PCs não estão declarados saudáveis. Uma ruptura física real pode comprometer parte maior ou todo o segmento.`);
+      } else {
+        network.setAttribute("aria-label", "Mapa com roteador ligado por uma derivação separada ao cabo compartilhado, cinco computadores derivados do tronco e terminações nas duas pontas.");
+      }
+      html += positions.map(position => `<div class="tap" style="left:${position}%" aria-hidden="true"></div>`).join("");
+      html += `<div class="node router ${routerFailed ? "failed" : ""}" role="img" aria-label="Roteador ${routerFailed ? "com falha" : "funcionando"}">
+        <div class="device router-device" aria-hidden="true"></div><span class="node-label">ROTEADOR</span>
+        <span class="node-status">${routerFailed ? "GATEWAY INATIVO" : "ORIGEM / GATEWAY"}</span></div>`;
+      for (let i = 0; i < 5; i++) {
+        const isIsolated = cableBroken && i + 1 > breakAfter;
+        const unreliable = cableBroken && !isIsolated && !pcFailed[i];
+        const isDestination = activeDestination === i + 1;
+        const classes = ["node", `pc-${i + 1}`, pcFailed[i] ? "failed" : "", isIsolated ? "isolated" : "", unreliable ? "unreliable" : "", delivered.has(i + 1) && !cableBroken ? "accepted" : "", isDestination ? "destination" : ""].filter(Boolean).join(" ");
+        const destinationDescription = isDestination ? ", destino endereçado do pacote" : "";
+        html += `<div class="${classes}" role="img" aria-label="Computador ${i + 1}, ${statusForPc(i).toLowerCase()}${destinationDescription}">
+          <div class="device" aria-hidden="true"><div class="monitor"></div></div>
+          <span class="node-label">PC ${i + 1}</span><span class="node-status">${statusForPc(i)}</span></div>`;
+      }
+      network.innerHTML = html;
+      const destinationLabel = activeDestination === null ? "" : ` Destino do pacote: PC ${activeDestination}${delivered.has(activeDestination) ? ", pacote recebido" : networkBusy ? ", pacote em trânsito" : ", destinatário selecionado"}.`;
+      const baseLabel = cableBroken
+        ? `Modelo didático simplificado de alcance: ruptura após PC ${breakAfter}; PCs ${breakAfter + 1} a 5 ficam sem alcance a partir do roteador no modelo. Os demais PCs não estão declarados saudáveis. Uma ruptura física real pode comprometer parte maior ou todo o segmento.`
+        : "Mapa com roteador ligado por uma derivação separada ao cabo compartilhado, cinco computadores derivados do tronco e terminações nas duas pontas.";
+      network.setAttribute("aria-label", `${baseLabel}${destinationLabel}`);
+    }
+
+    function missionProgress() {
+      const mission = missions[current];
+      return Math.min(mission.progress(), mission.total);
+    }
+
+    function updateView() {
+      const mission = missions[current];
+      $("score").textContent = score;
+      $("medals").textContent = medals;
+      $("missionStat").textContent = `${current + 1}/5`;
+      $("missionEyebrow").textContent = `MISSÃO ${String(current + 1).padStart(2, "0")} · ${mission.tag}`;
+      $("missionTitle").textContent = mission.title;
+      $("missionDesc").textContent = mission.desc;
+      $("objective").textContent = mission.objective;
+      $("actionGuide").textContent = mission.guide;
+      $("footerHint").textContent = mission.hint;
+      $("reflection").innerHTML = `<strong>PISTA LIBERADA:</strong> ${mission.reflection}`;
+      $("phaseTag").textContent = missionComplete[current] ? "CONCLUÍDA" : "EM ANDAMENTO";
+      $("breakModelNote").classList.toggle("hidden", !cableBroken);
+      const quizVisible = current === 4 || missionComplete[current];
+      $("controlsPanel").classList.toggle("hidden", quizVisible);
+      $("quizPanel").classList.toggle("hidden", !quizVisible);
+      if (quizVisible && renderedQuizIndex !== quizIndex) renderQuiz();
+      const progress = missionProgress();
+      const percent = Math.round(progress / mission.total * 100);
+      $("progress").style.width = `${percent}%`;
+      $("progressBar").setAttribute("aria-valuenow", String(percent));
+      $("taskStatus").textContent = `${progress} de ${mission.total} observações`;
+      $("missionList").innerHTML = missions.map((item, index) => {
+        const state = missionComplete[index] ? "complete" : index === current ? "current" : "";
+        const label = missionComplete[index] ? "Etapa concluída" : index === current ? "Missão atual" : "Etapa bloqueada";
+        const number = missionComplete[index] ? "✓" : index + 1;
+        return `<div class="mission-row ${state}" ${index === current ? 'aria-current="step"' : ""}>
+          <span class="mission-number">${number}</span><span><strong>${item.title}</strong><small>${label}</small></span></div>`;
+      }).join("");
+      $("sendButtons").innerHTML = [1,2,3,4,5].map(number =>
+        `<button class="blue-btn" type="button" data-send="${number}" aria-label="Enviar pacote endereçado ao computador ${number}">Enviar para PC ${number}</button>`
+      ).join("");
+      $("sendButtons").querySelectorAll("[data-send]").forEach(button => button.addEventListener("click", () => sendOne(Number(button.dataset.send))));
+      renderMissionControls();
+      const finalMission = current === 4;
+      const hasNextQuiz = finalMission && quizIndex < quizQuestions.length - 1;
+      const canAdvance = quizAnswered && (finalMission ? hasNextQuiz || missionComplete[current] : missionComplete[current]);
+      const canReveal = finalMission && quizIndex === quizQuestions.length - 1 && quizAnswered && missionComplete[current];
+      $("nextButton").classList.toggle("hidden", !canAdvance);
+      $("nextButton").textContent = canReveal
+        ? "Ver revelação final →"
+        : finalMission ? "Próxima pergunta →" : "Próxima missão →";
+      drawNetwork();
+    }
+
+    function renderMissionControls() {
+      const controls = $("missionControls");
+      controls.replaceChildren();
+      const addButton = (text, action, className = "danger") => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = className;
+        button.textContent = text;
+        button.addEventListener("click", action);
+        controls.append(button);
+        return button;
+      };
+      const addSelect = (labelText, options, value, id) => {
+        const label = document.createElement("label");
+        label.className = "control-label";
+        label.htmlFor = id;
+        label.textContent = labelText;
+        const select = document.createElement("select");
+        select.id = id;
+        for (const [optionValue, text] of options) {
+          const option = document.createElement("option");
+          option.value = optionValue;
+          option.textContent = text;
+          select.append(option);
         }
+        select.value = String(value);
+        controls.append(label, select);
+        return select;
+      };
+      if (current === 1) {
+        const select = addSelect("Computador para simular defeito", [1,2,3,4,5].map(n => [n, `PC ${n}`]), faultyPc ?? 1, "failedPcSelect");
+        addButton("⚠ Simular falha no PC", () => failPc(Number(select.value)));
+      } else if (current === 2) {
+        addButton(routerFailed ? "↻ Ligar roteador" : "⚠ Simular falha do roteador", toggleRouter, routerFailed ? "primary" : "danger");
+        const healthyPcs = [1,2,3,4,5].filter(n => !pcFailed[n - 1]);
+        const fromDefault = healthyPcs[0] ?? 1;
+        const toDefault = healthyPcs.find(n => n !== fromDefault) ?? 2;
+        const from = addSelect("Comunicação local · origem", [1,2,3,4,5].map(n => [n, `PC ${n}`]), fromDefault, "localFrom");
+        const to = addSelect("Comunicação local · destino", [1,2,3,4,5].map(n => [n, `PC ${n}`]), toDefault, "localTo");
+        addButton("↔ Testar comunicação local", () => testLocal(Number(from.value), Number(to.value)), "blue-btn");
+      } else if (current === 3) {
+        addButton("↻ Restaurar roteador e PCs", resetDevices, "primary");
+        const select = addSelect("Ponto de ruptura · após qual PC", [1,2,3,4].map(n => [n, `Depois do PC ${n}`]), breakAfter, "breakPoint");
+        addButton(cableBroken ? "⚡ Cabo rompido" : "⚡ Romper cabo principal", () => breakCable(Number(select.value)), "danger");
+        addButton("🔎 Inspecionar e reparar cabo", repairCable, "primary");
+      }
+    }
 
-        function drawTerminator(x, y, side) {
-            ctx.fillStyle = '#f59e0b';
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1;
-            const w = 12, h = 24;
-            const tx = side === 'left' ? x - w : x;
-            ctx.fillRect(tx, y - h/2, w, h);
-            ctx.strokeRect(tx, y - h/2, w, h);
+    function checkCompletion() {
+      const wasComplete = missionComplete[current];
+      const progress = missionProgress();
+      if (progress >= missions[current].total) missionComplete[current] = true;
+      if (!wasComplete && missionComplete[current]) {
+        medals += 1;
+        score += 25;
+        log(`Missão ${current + 1} concluída! Medalha de campo conquistada.`, "good");
+      }
+      updateView();
+    }
+
+    function flashObservers() {
+      if (effectiveReducedMotion()) return;
+      const scene = $("network");
+      scene.querySelectorAll(".node.pc-1,.node.pc-2,.node.pc-3,.node.pc-4,.node.pc-5").forEach(node => {
+        const number = Number(node.className.match(/pc-(\d)/)?.[1]);
+        if (number && !pcFailed[number - 1] && !(cableBroken && number > breakAfter)) {
+          node.classList.add("observing");
         }
+      });
+    }
 
-        // --- AÇÕES DO USUÁRIO ---
-        function sendData() {
-            const srcId = parseInt(document.getElementById('select-src').value);
-            const dstId = parseInt(document.getElementById('select-dst').value);
-
-            if (srcId === dstId) {
-                alert("Escolha computadores diferentes para Origem e Destino!");
-                return;
-            }
-
-            // Reseta status
-            pcs.forEach(p => { p.status = 'idle'; p.msg = ''; });
-            signals = [];
-
-            const srcPc = pcs[srcId];
-            const startX = canvas.width * srcPc.x;
-
-            srcPc.status = 'sending';
-            srcPc.msg = 'ENVIANDO...';
-
-            if (isCableBroken) {
-                setStatus("⚠️ Tentando transmitir em um barramento rompido...", "var(--warning)");
-            } else {
-                setStatus(`📡 Transmitindo de ${srcPc.label} para ${pcs[dstId].label} (Broadcast no Barramento)`, "var(--primary)");
-            }
-
-            // Em barramento, o sinal elétrico se propaga para AMBOS OS LADOS
-            signals.push({ x: startX, dir: -1, speed: 3, srcId: srcId, dstId: dstId, reached: [srcId] });
-            signals.push({ x: startX, dir: 1, speed: 3, srcId: srcId, dstId: dstId, reached: [srcId] });
+    function animateCablePacket(target, source = "router") {
+      const packet = document.createElement("span");
+      packet.className = "packet";
+      packet.setAttribute("aria-hidden", "true");
+      const tag = document.createElement("span");
+      tag.className = "packet-tag";
+      tag.setAttribute("aria-hidden", "true");
+      tag.textContent = `DESTINO: PC ${target}`;
+      const network = $("network");
+      const startX = source === "router" ? 12 : positions[source - 1];
+      const targetX = positions[target - 1];
+      const startY = source === "router" ? 81 : 40;
+      packet.style.left = `${startX}%`;
+      packet.style.top = `${startY}%`;
+      tag.style.left = `${startX}%`;
+      tag.style.top = `${startY}%`;
+      network.append(packet, tag);
+      const reducedMotion = effectiveReducedMotion();
+      const place = (x, y) => {
+        packet.style.left = `${x}%`;
+        packet.style.top = `${y}%`;
+        tag.style.left = `${x}%`;
+        tag.style.top = `${y}%`;
+      };
+      if (reducedMotion) {
+        place(targetX, 40);
+        packet.remove();
+        tag.remove();
+        return Promise.resolve();
+      }
+      let frame = null;
+      let settled = false;
+      let resolveCurrentSegment = null;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (frame !== null) window.cancelAnimationFrame(frame);
+        place(targetX, 40);
+        packet.remove();
+        tag.remove();
+        activePacketAnimationFinish = null;
+        resolveCurrentSegment?.();
+      };
+      const moveSegment = (fromX, fromY, toX, toY, duration) => new Promise(resolve => {
+        if (settled) { resolve(); return; }
+        resolveCurrentSegment = resolve;
+        const startedAt = performance.now();
+        const move = now => {
+          if (settled) { resolve(); return; }
+          if (effectiveReducedMotion()) { resolve(); return; }
+          const progress = Math.min((now - startedAt) / duration, 1);
+          place(fromX + (toX - fromX) * progress, fromY + (toY - fromY) * progress);
+          if (progress < 1) frame = window.requestAnimationFrame(move);
+          else resolve();
+        };
+        frame = window.requestAnimationFrame(move);
+      });
+      return (async () => {
+        activePacketAnimationFinish = finish;
+        if (source === "router") await moveSegment(startX, startY, startX, 64, 190);
+        else await moveSegment(startX, startY, startX, 64, 220);
+        if (settled) return;
+        await moveSegment(startX, 64, targetX, 64, 520 + Math.abs(targetX - startX) * 4);
+        if (settled) return;
+        await moveSegment(targetX, 64, targetX, 40, 240);
+        if (!settled) {
+          packet.remove();
+          tag.remove();
+          settled = true;
+          activePacketAnimationFinish = null;
         }
+      })();
+    }
 
-        function toggleCableBreak() {
-            isCableBroken = !isCableBroken;
-            const btn = document.getElementById('btn-cut');
-            signals = [];
-            pcs.forEach(p => { p.status = 'idle'; p.msg = ''; });
+    async function sendOne(number) {
+      if (!started || networkBusy) return;
+      activeDestination = number;
+      observed = new Set();
+      $("packetStatus").textContent = `Destino: PC ${number}. Os PCs ativos observam o sinal compartilhado; somente o computador endereçado aceitará este pacote.`;
+      drawNetwork();
+      if (current === 2 && routerFailed) {
+        routerSendTried = true;
+        $("packetStatus").textContent = `Envio para PC ${number} não realizado: o roteador/gateway está inativo.`;
+        log("Sem roteador/gateway: o pacote originado nele não foi enviado. Teste o tráfego local entre PCs.", "bad");
+        checkCompletion();
+        return;
+      }
+      if (routerFailed) {
+        $("packetStatus").textContent = `Destino PC ${number} selecionado, mas o pacote não saiu: roteador/gateway inativo.`;
+        log("Falha: o roteador/gateway está inativo. Pacotes originados nele não seguem.", "bad");
+        checkCompletion();
+        return;
+      }
+      if (current === 1 && faultyPc === number) {
+        faultyPcTested = true;
+        $("packetStatus").textContent = `Destino PC ${number}: pacote recusado porque este computador está com falha; o tronco continua ativo.`;
+        log(`PC ${number} não aceitou o pacote: o equipamento está com falha. O cabo segue ativo.`, "bad");
+        checkCompletion();
+        return;
+      }
+      if (pcFailed[number - 1]) {
+        $("packetStatus").textContent = `Destino PC ${number}: pacote recusado pelo computador com falha.`;
+        log(`PC ${number} está com falha; o pacote não foi aceito.`, "bad");
+        checkCompletion();
+        return;
+      }
+      if (cableBroken) {
+        if (current === 3) breakTested = true;
+        $("packetStatus").textContent = `Destino PC ${number}: envio não confirmado no modelo didático de cabo rompido.`;
+        const detail = number > breakAfter
+          ? `PC ${number} está além do corte e sem alcance no modelo.`
+          : `O alcance até PC ${number} não é garantido no modelo.`;
+        log(`${detail} A ruptura não permite concluir que o trecho restante esteja saudável; uma falha física pode afetar mais nós ou todo o segmento.`, "bad");
+        checkCompletion();
+        return;
+      }
+      networkBusy = true;
+      for (let i = 1; i <= 5; i++) {
+        if (!pcFailed[i - 1] && !(cableBroken && i > breakAfter)) observed.add(i);
+      }
+      drawNetwork();
+      log(`Pacote endereçado ao PC ${number}: segue do gateway ao tronco e pela derivação do destino. Os outros PCs ativos observam o sinal, mas não o aceitam.`, "info");
+      flashObservers();
+      await animateCablePacket(number);
+      networkBusy = false;
+      delivered.add(number);
+      observed.add(number);
+      $("packetStatus").textContent = `PC ${number} aceitou o pacote endereçado. Os demais PCs ativos observaram o sinal, mas não processaram estes dados.`;
+      if (current === 0 && !missionComplete[0]) {
+        if (!window.__busScored) window.__busScored = new Set();
+        if (!window.__busScored.has(number)) { score += 10; window.__busScored.add(number); }
+      }
+      if (current === 1 && faultyPc !== null && number !== faultyPc) healthyAfterPcFault = true;
+      log(`PC ${number} viu o sinal; apenas o destinatário correto aceitou o pacote.`, "good");
+      checkCompletion();
+    }
 
-            if (isCableBroken) {
-                btn.innerText = "🩹 Consertar Cabo";
-                btn.classList.remove('btn-danger');
-                btn.classList.add('btn-warning');
-                setStatus("💥 O cabo principal foi cortado! Toda a comunicação foi interrompida.", "var(--danger)");
-            } else {
-                btn.innerText = "✂️ Romper Cabo Principal";
-                btn.classList.remove('btn-warning');
-                btn.classList.add('btn-danger');
-                setStatus("✅ Cabo consertado. A rede voltou ao normal.", "var(--success)");
-            }
+    async function sendAll() {
+      if (!started || networkBusy) return;
+      if (routerFailed) {
+        if (current === 2) routerSendTried = true;
+        log("O envio em grupo não partiu: o roteador/gateway está inativo.", "bad");
+        checkCompletion();
+        return;
+      }
+      const targets = [1,2,3,4,5];
+      log("Sequência iniciada: cinco pacotes separados, com um destinatário diferente por envio; não é um único broadcast.", "info");
+      for (const target of targets) await sendOne(target);
+    }
+
+    function failPc(number) {
+      if (current !== 1 || faultyPc !== null) return;
+      faultyPc = number;
+      pcFailed[number - 1] = true;
+      log(`Falha simulada no PC ${number}. Só este equipamento foi isolado; o tronco permanece conectado.`, "bad");
+      updateView();
+    }
+
+    function toggleRouter() {
+      routerFailed = !routerFailed;
+      log(routerFailed
+        ? "Roteador desligado: novos pacotes originados nele não saem. A rede local ainda pode operar."
+        : "Roteador restaurado. O gateway voltou, mas PCs saudáveis também podem trocar dados localmente.", routerFailed ? "bad" : "good");
+      updateView();
+    }
+
+    async function testLocal(from, to) {
+      if (networkBusy) return;
+      if (from === to) {
+        log("Escolha dois computadores diferentes para testar a comunicação local.", "bad");
+        return;
+      }
+      if (pcFailed[from - 1] || pcFailed[to - 1]) {
+        log("O teste local falhou: um dos PCs escolhidos está com defeito.", "bad");
+        return;
+      }
+      if (cableBroken && ((from > breakAfter) !== (to > breakAfter))) {
+        log(`PC ${from} e PC ${to} estão em trechos separados pela ruptura. O tráfego não atravessa o cabo partido.`, "bad");
+        return;
+      }
+      networkBusy = true;
+      localPair = [from, to];
+      activeDestination = to;
+      observed = new Set();
+      observed.add(from);
+      observed.add(to);
+      $("packetStatus").textContent = `Comunicação local: destino PC ${to}, originada no PC ${from}; o tráfego usa o tronco, sem passar pelo roteador.`;
+      drawNetwork();
+      log(`Pacote local de PC ${from} para PC ${to}: percorre o tronco entre as derivações, sem passar pelo roteador.`, "info");
+      await animateCablePacket(to, from);
+      networkBusy = false;
+      localTested = true;
+      observed.add(from);
+      observed.add(to);
+      delivered.add(to);
+      log(`PC ${from} comunicou diretamente com PC ${to} pelo segmento local. O roteador não foi necessário para este tráfego.`, "good");
+      checkCompletion();
+    }
+
+    function resetDevices() {
+      if (current !== 3) return;
+      pcFailed = Array(5).fill(false);
+      faultyPc = null;
+      routerFailed = false;
+      allDevicesReset = true;
+      log("Roteador e PCs restaurados. Equipamentos ativos; agora investigue o cabo principal.", "good");
+      updateView();
+      checkCompletion();
+    }
+
+    function breakCable(afterPc) {
+      if (current !== 3) return;
+      if (!allDevicesReset) {
+        log("Restaure primeiro o roteador e os PCs para isolar a falha do meio físico.", "bad");
+        return;
+      }
+      cableBroken = true;
+      cableSimulated = true;
+      breakAfter = afterPc;
+      breakTested = false;
+      log(`Ruptura simulada depois do PC ${afterPc}. No modelo simplificado, PCs ${afterPc + 1} a 5 ficam sem alcance a partir do roteador; o outro trecho não é considerado saudável. Em cabo coaxial real, reflexões e terminação incorreta podem afetar parte maior ou todo o segmento.`, "bad");
+      updateView();
+    }
+
+    function repairCable() {
+      if (current !== 3 || !cableBroken) {
+        log("Não há ruptura ativa para reparar. Simule primeiro o rompimento do tronco.", "info");
+        return;
+      }
+      cableBroken = false;
+      cableRepaired = true;
+      log("Inspeção encontrou uma ruptura no tronco. Conector e terminação foram reparados; o caminho voltou a ficar contínuo.", "good");
+      updateView();
+      checkCompletion();
+    }
+
+    function nextMission() {
+      if (current === 4) {
+        if (!quizAnswered) return;
+        if (quizIndex < quizQuestions.length - 1) {
+          quizIndex += 1;
+          renderedQuizIndex = -1;
+          updateView();
+          $("quizContent").querySelector(".quiz-question")?.focus({ preventScroll: true });
+          return;
         }
+        if (!missionComplete[current]) return;
+        showFinale();
+        return;
+      }
+      if (!missionComplete[current] || !quizAnswered) return;
+      current += 1;
+      quizIndex = current;
+      delivered = new Set();
+      observed = new Set();
+      activeDestination = null;
+      $("packetStatus").textContent = "Nova etapa. Selecione um destinatário para destacar o caminho do pacote.";
+      updateView();
+      if (current === 4) $("quizContent").querySelector(".quiz-question")?.focus({ preventScroll: true });
+      else $("missionTitle").focus();
+    }
 
-        function resetSim() {
-            isCableBroken = false;
-            signals = [];
-            pcs.forEach(p => { p.status = 'idle'; p.msg = ''; });
+    function renderQuiz() {
+      quizAnswered = false;
+      if (quizIndex >= quizQuestions.length) return;
+      const item = quizQuestions[quizIndex];
+      renderedQuizIndex = quizIndex;
+      $("quizContent").innerHTML = `<div class="quiz-progress">PERGUNTA ${quizIndex + 1} DE ${quizQuestions.length} · ${quizCorrect} acertos</div>
+        <h4 class="quiz-question" tabindex="-1">${item.question}</h4>
+        <div class="quiz-choices" id="quizChoices"></div>
+        <p class="quiz-feedback" id="quizFeedback" aria-live="polite">Escolha a resposta que combina com as pistas.</p>`;
+      item.choices.forEach((choice, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = choice;
+        button.setAttribute("aria-label", choice);
+        button.addEventListener("click", () => answerQuiz(index));
+        $("quizChoices").append(button);
+      });
+      $("quizPanel").scrollIntoView({ block: "nearest" });
+      $("quizContent").querySelector(".quiz-question").focus({ preventScroll: true });
+    }
 
-            const btn = document.getElementById('btn-cut');
-            btn.innerText = "✂️ Romper Cabo Principal";
-            btn.classList.remove('btn-warning');
-            btn.classList.add('btn-danger');
+    function answerQuiz(index) {
+      if (quizAnswered) return;
+      const item = quizQuestions[quizIndex];
+      const buttons = [...$("quizChoices").querySelectorAll("button")];
+      const correct = index === item.correct;
+      quizAnswered = true;
+      buttons.forEach((button, i) => {
+        button.disabled = true;
+        if (i === item.correct) button.classList.add("correct");
+        else if (i === index) button.classList.add("incorrect");
+      });
+      if (correct) {
+        quizCorrect += 1;
+        if (!quizPoints.has(quizIndex)) { score += 10; quizPoints.add(quizIndex); }
+      }
+      quizAnswers.add(quizIndex);
+      $("quizFeedback").innerHTML = `<strong>${correct ? "Correto!" : "Ainda não."}</strong> ${item.explain}${correct ? "" : ` Resposta correta: <strong>${item.choices[item.correct]}</strong>`}`;
+      log(`Dedução ${quizIndex + 1}: ${correct ? "correta" : "revise a explicação"}. ${item.explain}`, correct ? "good" : "info");
+      checkCompletion();
+      $("nextButton").focus({ preventScroll: true });
+    }
 
-            setStatus("Simulador reiniciado. Escolha os PCs e transmita dados.", "var(--primary)");
-        }
+    function showFinale() {
+      $("game").classList.add("hidden");
+      $("finale").classList.remove("hidden");
+      $("finalScore").textContent = `Placar final: ${score} XP · ${medals} medalhas · ${quizCorrect} de ${quizQuestions.length} respostas corretas.`;
+      $("finalTitle").focus?.();
+      window.scrollTo(0, 0);
+    }
 
-        function setStatus(text, color) {
-            const el = document.getElementById('status-text');
-            el.innerText = text;
-            el.style.color = color || "var(--primary)";
-        }
+    function resetGame() {
+      current = 0; score = 0; medals = 0; started = false;
+      delivered = new Set(); observed = new Set(); pcFailed = Array(5).fill(false);
+      faultyPc = null; faultyPcTested = false; healthyAfterPcFault = false;
+      routerFailed = false; routerSendTried = false; localTested = false; localPair = null;
+      allDevicesReset = false; cableBroken = false; cableSimulated = false; breakAfter = 2; breakTested = false; cableRepaired = false;
+      quizIndex = 0; quizCorrect = 0; quizAnswered = false; quizAnswers = new Set(); quizPoints = new Set(); networkBusy = false;
+      renderedQuizIndex = -1; activeDestination = null;
+      missionComplete = Array(5).fill(false);
+      window.__busScored = new Set();
+      $("intro").classList.remove("hidden");
+      $("game").classList.add("hidden");
+      $("finale").classList.add("hidden");
+      $("log").innerHTML = '<p class="info">› Aguardando início da missão.</p>';
+      $("controlsPanel").classList.remove("hidden");
+      $("quizPanel").classList.add("hidden");
+      $("quizContent").replaceChildren();
+      $("packetStatus").textContent = "Nenhum pacote em trânsito. Selecione um destinatário para destacar o caminho.";
+      $("score").textContent = "0"; $("medals").textContent = "0"; $("missionStat").textContent = "—";
+      drawNetwork();
+      window.scrollTo(0, 0);
+      $("startButton").focus();
+    }
 
-        // --- LÓGICA DO QUIZ ---
-        const quizQuestions = [
-            {
-                q: "1. Como os dados navegam no cabo barramento em uma transmissão?",
-                options: [
-                    "Vão diretamente e apenas para o computador de destino.",
-                    "Propagam-se por todo o cabo para TODOS os computadores (Broadcast).",
-                    "São enviados para um Switch central que redireciona o sinal."
-                ],
-                correct: 1,
-                explanation: "Exato! No barramento o meio é compartilhado. O sinal vai para todos, mas apenas o destino aceita o pacote."
-            },
-            {
-                q: "2. O que acontece se o cabo principal do barramento for partido ao meio?",
-                options: [
-                    "Apenas os computadores do lado esquerdo param de funcionar.",
-                    "A rede continua funcionando normalmente pois usa Wi-Fi de backup.",
-                    "A rede inteira para de funcionar (Ponto Único de Falha)."
-                ],
-                correct: 2,
-                explanation: "Correto! Esta é a principal desvantagem: se o cabo barramento quebra, toda a comunicação é paralisada."
-            },
-            {
-                q: "3. Qual é a principal vantagem da topologia em barramento?",
-                options: [
-                    "Economia de cabos e facilidade de instalação em redes pequenas.",
-                    "Velocidade extremamente alta sem nenhuma colisão de dados.",
-                    "Segurança total, pois nenhum PC consegue ver o tráfego do outro."
-                ],
-                correct: 0,
-                explanation: "Perfeito! A topologia usa muito menos cabos que a topologia em Estrela, barateando a instalação."
-            }
-        ];
-
-        let currentQuizIndex = 0;
-        let score = 0;
-
-        function renderQuiz() {
-            const q = quizQuestions[currentQuizIndex];
-            document.getElementById('quiz-question').innerText = q.q;
-
-            const optsDiv = document.getElementById('quiz-options');
-            optsDiv.innerHTML = '';
-
-            document.getElementById('quiz-feedback').className = 'quiz-feedback';
-            document.getElementById('quiz-feedback').style.display = 'none';
-            document.getElementById('btn-next-quiz').style.display = 'none';
-
-            q.options.forEach((optText, idx) => {
-                const btn = document.createElement('div');
-                btn.className = 'quiz-option';
-                btn.innerText = optText;
-                btn.onclick = () => answerQuiz(idx);
-                optsDiv.appendChild(btn);
-            });
-        }
-
-        function answerQuiz(selectedIdx) {
-            const q = quizQuestions[currentQuizIndex];
-            const feedbackEl = document.getElementById('quiz-feedback');
-            const opts = document.querySelectorAll('.quiz-option');
-
-            opts.forEach(o => o.style.pointerEvents = 'none'); // Desabilita novos cliques
-
-            if (selectedIdx === q.correct) {
-                score++;
-                feedbackEl.innerText = "✅ " + q.explanation;
-                feedbackEl.className = 'quiz-feedback correct';
-            } else {
-                feedbackEl.innerText = "❌ Incorreto. " + q.explanation;
-                feedbackEl.className = 'quiz-feedback wrong';
-            }
-
-            document.getElementById('quiz-score').innerText = `Pontos: ${score}/3`;
-            document.getElementById('btn-next-quiz').style.display = 'block';
-        }
-
-        function nextQuestion() {
-            currentQuizIndex++;
-            if (currentQuizIndex < quizQuestions.length) {
-                renderQuiz();
-            } else {
-                document.getElementById('quiz-container').innerHTML = `
-                    <div style="text-align: center; padding: 20px 0;">
-                        <h4>🎉 Quiz Concluído!</h4>
-                        <p style="margin: 10px 0; color: var(--text-muted);">Sua pontuação final foi <b>${score} de 3</b>.</p>
-                        <button onclick="resetQuiz()">Tentar Novamente 🔄</button>
-                    </div>
-                `;
-            }
-        }
-
-        function resetQuiz() {
-            currentQuizIndex = 0;
-            score = 0;
-            document.getElementById('quiz-score').innerText = `Pontos: 0/3`;
-            document.getElementById('quiz-container').innerHTML = `
-                <p id="quiz-question" style="font-weight: 600; font-size: 0.95rem; margin-top: 4px;"></p>
-                <div id="quiz-options"></div>
-                <div id="quiz-feedback" class="quiz-feedback"></div>
-                <button id="btn-next-quiz" style="display: none; margin-top: 10px; width: 100%;" onclick="nextQuestion()">Próxima Pergunta ➡️</button>
-            `;
-            renderQuiz();
-        }
-
-        // --- INICIALIZAÇÃO ---
-        draw();
-        renderQuiz();
-    </script>
+    $("startButton").addEventListener("click", () => {
+      started = true;
+      $("intro").classList.add("hidden");
+      $("game").classList.remove("hidden");
+      log("Chamado aceito. Cinco computadores, um roteador e uma linha misteriosa.", "good");
+      updateView();
+      $("missionTitle").focus();
+    });
+    $("sendAllButton").addEventListener("click", sendAll);
+    $("nextButton").addEventListener("click", nextMission);
+    $("clearLogButton").addEventListener("click", () => {
+      $("log").replaceChildren();
+      log("Diário limpo. O progresso da missão foi preservado.", "info");
+    });
+    $("restartButton").addEventListener("click", resetGame);
+    $("playAgainButton").addEventListener("click", resetGame);
+    let accessibilityOpener = null;
+    const accessibilityDialog = $("accessibilityDialog");
+    $("accessibilityButton").addEventListener("click", event => {
+      accessibilityOpener = event.currentTarget;
+      if (!accessibilityDialog.open) accessibilityDialog.showModal();
+      $("decreaseFontButton").focus();
+    });
+    $("closeAccessibilityButton").addEventListener("click", () => accessibilityDialog.close());
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && accessibilityDialog.open) accessibilityDialog.close();
+    });
+    accessibilityDialog.addEventListener("click", event => {
+      if (event.target === accessibilityDialog) accessibilityDialog.close();
+    });
+    accessibilityDialog.addEventListener("close", () => {
+      if (accessibilityOpener?.isConnected) accessibilityOpener.focus();
+    });
+    $("decreaseFontButton").addEventListener("click", () => {
+      accessibilityPreferences.fontSize = Math.max(16, accessibilityPreferences.fontSize - 2);
+      saveAccessibilityPreferences();
+      applyAccessibilityPreferences();
+    });
+    $("increaseFontButton").addEventListener("click", () => {
+      accessibilityPreferences.fontSize = Math.min(24, accessibilityPreferences.fontSize + 2);
+      saveAccessibilityPreferences();
+      applyAccessibilityPreferences();
+    });
+    $("contrastToggle").addEventListener("click", () => {
+      accessibilityPreferences.highContrast = !accessibilityPreferences.highContrast;
+      saveAccessibilityPreferences();
+      applyAccessibilityPreferences();
+    });
+    $("motionToggle").addEventListener("click", () => {
+      accessibilityPreferences.reduceMotion = !effectiveReducedMotion();
+      saveAccessibilityPreferences();
+      applyAccessibilityPreferences();
+    });
+    $("resetAccessibilityButton").addEventListener("click", () => {
+      accessibilityPreferences = {
+        fontSize: DEFAULT_FONT_SIZE,
+        highContrast: false,
+        reduceMotion: null
+      };
+      saveAccessibilityPreferences();
+      applyAccessibilityPreferences();
+    });
+    const handleSystemMotionChange = () => {
+      if (accessibilityPreferences.reduceMotion === null) applyAccessibilityPreferences();
+    };
+    if (systemMotionPreference.addEventListener) {
+      systemMotionPreference.addEventListener("change", handleSystemMotionChange);
+    } else {
+      systemMotionPreference.addListener(handleSystemMotionChange);
+    }
+    drawNetwork();
+  </script>
 </body>
 </html>
